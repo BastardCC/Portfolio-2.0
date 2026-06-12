@@ -1,3 +1,113 @@
+.hero {
+  position: relative;
+}
+
+.hero-circles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-circle {
+  position: absolute;
+  width: auto;
+  height: auto;
+  max-width: none;
+}
+
+.hero-circle--small {
+  z-index: 1;
+}
+
+.hero-circle--big {
+  z-index: 2;
+}
+
+.hero-circle__asset {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hero-circle__asset--big {
+  transform: translate(90vw, 85vh);
+  animation: hero-circle-enter-big 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.15s
+    forwards;
+}
+
+.hero-circle__asset--small {
+  transform: translate(75vw, 70vh);
+  animation: hero-circle-enter-small 2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
+    forwards;
+}
+
+@keyframes hero-circle-enter-big {
+  from {
+    transform: translate(90vw, 85vh);
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes hero-circle-enter-small {
+  from {
+    transform: translate(75vw, 70vh);
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+/* Mobile */
+.hero-circle--big {
+  position: absolute;
+  top: -85%;
+  left: 52%;
+  width: min(36rem, 94vw);
+  transform: translateX(-55%);
+}
+
+.hero-circle--small {
+  position: absolute;
+  top: 8%;
+  left: 38%;
+  width: min(24rem, 62vw);
+}
+
+/* Tablette */
+@media (width >= 48rem) {
+  .hero-circle--big {
+    top: -115%;
+    left: 54%;
+    width: min(48rem, 84vw);
+    transform: translateX(-56%);
+  }
+
+  .hero-circle--small {
+    top: -2%;
+    left: 44%;
+    width: min(36rem, 50vw);
+  }
+}
+
+/* Desktop — valeurs de référence */
+@media (width >= 64rem) {
+  .hero-circle--big {
+    top: -140%;
+    left: 55%;
+    width: min(60rem, 78vw);
+    transform: translateX(-58%);
+  }
+
+  .hero-circle--small {
+    top: -10%;
+    left: 48.5%;
+    width: min(60rem, 40vw);
+  }
+}
+
 @keyframes hero-line-expand {
   from {
     transform: scaleX(0.006);
@@ -70,7 +180,9 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-line,
   .hero-reveal-rise > *,
-  .hero-reveal-descend > * {
+  .hero-reveal-descend > *,
+  .hero-circle__asset--big,
+  .hero-circle__asset--small {
     animation: none;
     transform: none;
   }
