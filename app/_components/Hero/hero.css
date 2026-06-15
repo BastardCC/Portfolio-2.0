@@ -2,11 +2,21 @@
   position: relative;
 }
 
+.hero__main {
+  position: relative;
+  isolation: isolate;
+}
+
 .hero-circles {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+}
+
+.hero__content {
+  position: relative;
+  z-index: 10;
 }
 
 .hero-circle {
@@ -175,12 +185,27 @@
   .hero-reveal-descend > .hero-delay-copy {
     animation-delay: 0.95s;
   }
+
+  .hero-body-lines {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-body-line {
+    display: block;
+  }
+
+  .hero-body-lines .hero-reveal-rise > .hero-body-line {
+    animation-duration: 1.2s;
+    animation-delay: calc(1.15s + var(--line-index) * 0.18s);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-line,
   .hero-reveal-rise > *,
   .hero-reveal-descend > *,
+  .hero-body-line,
   .hero-circle__asset--big,
   .hero-circle__asset--small {
     animation: none;
