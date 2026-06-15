@@ -5,7 +5,7 @@ import Hero from "./_components/Hero";
 export default function Home() {
   return (
     <div>
-      <header className="container py-2">
+      <header className="container relative z-10 py-2">
         <nav className="flex justify-between items-center py-4">
           <Link href="/" className="text-2xl font-bold">Logo</Link>
           <PillButton
@@ -18,7 +18,7 @@ export default function Home() {
           </PillButton>
         </nav>
       </header>
-      <section>
+      <section className="relative z-0">
         <Hero />
       </section>
     </div>
