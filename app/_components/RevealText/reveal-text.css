@@ -1,0 +1,59 @@
+@keyframes reveal-text-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-text-descend {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .reveal-text {
+    overflow: hidden;
+  }
+
+  .reveal-text--rise > * {
+    display: block;
+    transform: translateY(100%);
+    animation: reveal-text-rise var(--reveal-duration, 1.3s)
+      cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--reveal-delay, 0s);
+  }
+
+  .reveal-text--descend > * {
+    display: block;
+    transform: translateY(-100%);
+    animation: reveal-text-descend var(--reveal-duration, 1.3s)
+      cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--reveal-delay, 0s);
+  }
+
+  .reveal-lines {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reveal-lines .reveal-text > .reveal-text__line {
+    animation-duration: var(--reveal-duration, 1.2s);
+    animation-delay: calc(
+      var(--reveal-delay, 0s) + var(--line-index) * var(--reveal-stagger, 0.18s)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-text > *,
+  .reveal-text__line {
+    animation: none;
+    transform: none;
+  }
+}
