@@ -9,6 +9,7 @@ const projects = [
     category: "Site vitrine",
     tags: ["Next.js", "TypeScript", "Tailwind", "Supabase"],
     bgColor: "#798e7b",
+    href: "https://doonation.fr",
   },
   {
     title: "Project 2",
@@ -16,6 +17,7 @@ const projects = [
     category: "E-commerce",
     tags: ["React", "Node.js", "Stripe", "PostgreSQL"],
     bgColor: "#B692A1",
+    href: "#",
   },
   {
     title: "Project 3",
@@ -23,6 +25,7 @@ const projects = [
     category: "Application web",
     tags: ["Vue", "Nuxt", "Prisma", "Docker"],
     bgColor: "#E49366",
+    href: "#",
   },
   {
     title: "Project 4",
@@ -30,6 +33,7 @@ const projects = [
     category: "Portfolio",
     tags: ["Next.js", "Framer", "GSAP", "Figma"],
     bgColor: "#7397b7",
+    href: "#",
   },
 ];
 

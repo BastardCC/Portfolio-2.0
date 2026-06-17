@@ -1,7 +1,15 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useCallback, useRef, useState, type CSSProperties } from "react";
+import Link from "next/link";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+} from "react";
 import "./project-card.css";
 
 type CurtainState = "above" | "covering" | "below";
@@ -13,7 +21,30 @@ type ProjectCardProps = {
   tags: string[];
   image: StaticImageData;
   bgColor: string;
+  href: string;
 };
+
+const CURSOR_LERP = 0.12;
+
+const isExternalHref = (href: string) => /^https?:\/\//.test(href);
+
+const ProjectCursorIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden
+    className="project-card__cursor-icon"
+  >
+    <path
+      d="M7 17L17 7M17 7H9M17 7V15"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const ProjectCard = ({
   title,
@@ -22,20 +53,99 @@ const ProjectCard = ({
   tags,
   image,
   bgColor,
+  href,
 }: ProjectCardProps) => {
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
+  const targetRef = useRef({ x: 0, y: 0 });
+  const currentRef = useRef({ x: 0, y: 0 });
+  const isFollowingRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
+
   const [curtainState, setCurtainState] = useState<CurtainState>("above");
   const [curtainSnap, setCurtainSnap] = useState(false);
+  const [cursorVisible, setCursorVisible] = useState(false);
   const curtainStateRef = useRef<CurtainState>("above");
   curtainStateRef.current = curtainState;
 
-  const showCurtain = useCallback(() => {
+  const setCursorPosition = useCallback((x: number, y: number) => {
+    if (!cursorRef.current) return;
+    cursorRef.current.style.setProperty("--cursor-x", `${x}px`);
+    cursorRef.current.style.setProperty("--cursor-y", `${y}px`);
+  }, []);
+
+  const animateCursor = useCallback(() => {
+    const current = currentRef.current;
+    const target = targetRef.current;
+
+    current.x += (target.x - current.x) * CURSOR_LERP;
+    current.y += (target.y - current.y) * CURSOR_LERP;
+    setCursorPosition(current.x, current.y);
+
+    if (isFollowingRef.current) {
+      rafRef.current = requestAnimationFrame(animateCursor);
+    }
+  }, [setCursorPosition]);
+
+  const startFollowing = useCallback(() => {
+    isFollowingRef.current = true;
+    if (rafRef.current === null) {
+      rafRef.current = requestAnimationFrame(animateCursor);
+    }
+  }, [animateCursor]);
+
+  const stopFollowing = useCallback(() => {
+    isFollowingRef.current = false;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  const setTargetFromEvent = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    targetRef.current = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+  }, []);
+
+  const showCurtain = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      setCurtainSnap(false);
+      setCurtainState("covering");
+      setTargetFromEvent(event);
+
+      const { x, y } = targetRef.current;
+      currentRef.current = { x, y };
+      setCursorPosition(x, y);
+      setCursorVisible(true);
+      startFollowing();
+    },
+    [setCursorPosition, setTargetFromEvent, startFollowing],
+  );
+
+  const handleFocus = useCallback(() => {
     setCurtainSnap(false);
     setCurtainState("covering");
-  }, []);
+    setCursorVisible(true);
+    startFollowing();
+  }, [startFollowing]);
 
   const hideCurtain = useCallback(() => {
     setCurtainState((state) => (state === "covering" ? "below" : state));
-  }, []);
+    setCursorVisible(false);
+    stopFollowing();
+  }, [stopFollowing]);
+
+  const updatePointer = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      setTargetFromEvent(event);
+    },
+    [setTargetFromEvent],
+  );
 
   const handleCurtainTransitionEnd = useCallback(
     (event: React.TransitionEvent<HTMLSpanElement>) => {
@@ -51,6 +161,8 @@ const ProjectCard = ({
     [],
   );
 
+  useEffect(() => () => stopFollowing(), [stopFollowing]);
+
   const curtainClassName = [
     "project-card__curtain",
     `project-card__curtain--${curtainState}`,
@@ -59,21 +171,38 @@ const ProjectCard = ({
     .filter(Boolean)
     .join(" ");
 
-  return (
-    <article
-      className="project-card"
-      style={{ "--project-card-curtain-color": bgColor } as CSSProperties}
-      tabIndex={0}
-      onMouseEnter={showCurtain}
-      onMouseLeave={hideCurtain}
-      onFocus={showCurtain}
-      onBlur={hideCurtain}
-    >
+  const cursorClassName = [
+    "project-card__cursor",
+    cursorVisible ? "project-card__cursor--visible" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const cardStyle = {
+    "--project-card-curtain-color": bgColor,
+  } as CSSProperties;
+
+  const cardProps = {
+    ref: cardRef,
+    className: "project-card",
+    style: cardStyle,
+    onMouseEnter: showCurtain,
+    onMouseLeave: hideCurtain,
+    onMouseMove: updatePointer,
+    onFocus: handleFocus,
+    onBlur: hideCurtain,
+  };
+
+  const content = (
+    <>
       <span
         className={curtainClassName}
         aria-hidden
         onTransitionEnd={handleCurtainTransitionEnd}
       />
+      <span ref={cursorRef} className={cursorClassName} aria-hidden>
+        <ProjectCursorIcon />
+      </span>
       <header className="project-card__header">
         <div className="project-card__text-reveal">
           <h3 className="text-4xl">{title}</h3>
@@ -108,7 +237,27 @@ const ProjectCard = ({
           ))}
         </div>
       </footer>
-    </article>
+    </>
+  );
+
+  if (isExternalHref(href)) {
+    return (
+      <a
+        {...cardProps}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Voir le projet ${title}`}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link {...cardProps} href={href} aria-label={`Voir le projet ${title}`}>
+      {content}
+    </Link>
   );
 };
 
