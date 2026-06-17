@@ -8,24 +8,28 @@ const projects = [
     description: "Little description of the project",
     category: "Site vitrine",
     tags: ["Next.js", "TypeScript", "Tailwind", "Supabase"],
+    bgColor: "#798e7b",
   },
   {
     title: "Project 2",
     description: "Little description of the project",
     category: "E-commerce",
     tags: ["React", "Node.js", "Stripe", "PostgreSQL"],
+    bgColor: "#B692A1",
   },
   {
     title: "Project 3",
     description: "Little description of the project",
     category: "Application web",
     tags: ["Vue", "Nuxt", "Prisma", "Docker"],
+    bgColor: "#E49366",
   },
   {
     title: "Project 4",
     description: "Little description of the project",
     category: "Portfolio",
     tags: ["Next.js", "Framer", "GSAP", "Figma"],
+    bgColor: "#7397b7",
   },
 ];
 
