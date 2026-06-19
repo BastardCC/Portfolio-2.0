@@ -42,7 +42,7 @@ const Projects = () => {
     <div>
       <div className="container mb-10">
         <h2 className="text-[clamp(4rem,7vw+1rem,7rem)]">Projects</h2>
-        <RevealText direction="rise" delay={0.65}>
+        <RevealText direction="rise" delay={0}>
           <p className="text-[clamp(1.25rem,2.5vw+0.75rem,3.75rem)]">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
             quos.

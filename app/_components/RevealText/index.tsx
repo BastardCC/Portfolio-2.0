@@ -1,4 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
+"use client";
+
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import "./reveal-text.css";
 
 type RevealTextBaseProps = {
@@ -8,6 +10,12 @@ type RevealTextBaseProps = {
   /** Durée de l'animation (secondes) */
   duration?: number;
   className?: string;
+  /** Déclencher l'animation au scroll (Intersection Observer) */
+  triggerOnScroll?: boolean;
+  /** Ne jouer l'animation qu'une seule fois */
+  once?: boolean;
+  /** Marge autour du viewport pour déclencher plus tôt / plus tard */
+  rootMargin?: string;
 };
 
 type RevealTextLinesProps = RevealTextBaseProps & {
@@ -38,6 +46,40 @@ const revealStyle = (
     ...(staggerDelay !== undefined && { "--reveal-stagger": `${staggerDelay}s` }),
   }) as CSSProperties;
 
+const useRevealInView = (
+  enabled: boolean,
+  once: boolean,
+  rootMargin: string,
+) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(!enabled);
+
+  useEffect(() => {
+    if (!enabled) {
+      setIsVisible(true);
+      return;
+    }
+
+    const node = ref.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+
+        setIsVisible(true);
+        if (once) observer.disconnect();
+      },
+      { rootMargin, threshold: 0.15 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [enabled, once, rootMargin]);
+
+  return { ref, isVisible };
+};
+
 const RevealText = ({
   direction = "rise",
   delay,
@@ -47,11 +89,23 @@ const RevealText = ({
   lineClassName = "",
   lines,
   children,
+  triggerOnScroll = true,
+  once = true,
+  rootMargin = "0px 0px -8% 0px",
 }: RevealTextProps) => {
+  const { ref, isVisible } = useRevealInView(triggerOnScroll, once, rootMargin);
+
   if (lines?.length) {
     return (
       <div
-        className={`reveal-lines ${className}`.trim()}
+        ref={ref}
+        className={[
+          "reveal-lines",
+          isVisible ? "reveal-lines--visible" : "",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
         style={revealStyle(delay, duration, staggerDelay)}
       >
         {lines.map((line, index) => (
@@ -73,7 +127,15 @@ const RevealText = ({
 
   return (
     <div
-      className={`reveal-text reveal-text--${direction} ${className}`.trim()}
+      ref={ref}
+      className={[
+        "reveal-text",
+        `reveal-text--${direction}`,
+        isVisible ? "reveal-text--visible" : "",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={revealStyle(delay, duration)}
     >
       {children}
