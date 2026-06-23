@@ -1,6 +1,7 @@
 import Header from "./_components/Header";
 import Hero from "./_components/Hero";
 import Projects from "./_components/Projects";
+import Awards from "./_components/Awards";
 
 export default function Home() {
   return (
@@ -11,6 +12,9 @@ export default function Home() {
       </section>
       <section className="relative z-0 my-30">
         <Projects />
+      </section>
+      <section className="relative z-0 my-30">
+        <Awards />
       </section>
     </div>
   );
