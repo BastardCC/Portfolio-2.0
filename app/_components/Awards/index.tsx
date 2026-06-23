@@ -19,6 +19,10 @@ const awards = [
     title: "Award 4",
     description: "Award Description",
   },
+  {
+    title: "Award 5",
+    description: "Award Description",
+  },
 ];
 
 const Awards = () => {

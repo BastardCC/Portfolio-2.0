@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import AwardList, { type Award } from "./AwardList";
+import AwardTrophy from "./AwardTrophy";
 import "./awards.css";
 
 type AwardsScrollProps = {
@@ -53,6 +54,9 @@ const AwardsScroll = ({ awards }: AwardsScrollProps) => {
     };
 
     const updateTargets = () => {
+      const progress = measureScrollProgress();
+      scrollProgressRef.current = progress;
+
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
@@ -73,14 +77,12 @@ const AwardsScroll = ({ awards }: AwardsScrollProps) => {
         return;
       }
 
-      scrollProgressRef.current = measureScrollProgress();
-
       targetRef.current = awards.map((_, index) =>
-        getLineTarget(scrollProgressRef.current, index, awards.length),
+        getLineTarget(progress, index, awards.length),
       );
 
       if (
-        scrollProgressRef.current >= 0.999 ||
+        progress >= 0.999 ||
         targetRef.current.every((value) => value >= 0.998)
       ) {
         targetRef.current = awards.map(() => 1);
@@ -159,7 +161,7 @@ const AwardsScroll = ({ awards }: AwardsScrollProps) => {
         <div className="container">
           <div className="awards__layout">
             <div className="awards__panel awards__panel--emblem">
-              <div className="awards__emblem" aria-hidden />
+              <AwardTrophy scrollProgressRef={scrollProgressRef} />
             </div>
             <div className="awards__panel awards__panel--list">
               <AwardList

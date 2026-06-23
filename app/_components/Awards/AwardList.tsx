@@ -47,7 +47,7 @@ const AwardList = ({
           <article
             key={award.title}
             className="awards-item"
-            style={{ "--content-order": awards.length - 1 - index } as CSSProperties}
+            style={{ "--content-order": index } as CSSProperties}
           >
             <div className="awards-item__reveal">
               <div className="awards-item__row">
