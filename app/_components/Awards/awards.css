@@ -91,9 +91,97 @@
 
 .awards-list {
   width: 100%;
+  overflow: visible;
+}
+
+.awards-item {
+  --awards-item-curtain-duration: 0.4s;
+  --awards-item-cursor-size: 9rem;
+  --awards-item-cursor-offset-x: 0rem;
+  --awards-item-cursor-offset-y: -3rem;
+  --cursor-x: 0px;
+  --cursor-y: 0px;
+
+  position: relative;
+  overflow: visible;
+  cursor: pointer;
+}
+
+.awards-item__clip {
+  position: relative;
+  overflow: hidden;
+}
+
+.awards-item--hovered {
+  z-index: 2;
+}
+
+.awards-item__cursor {
+  position: absolute;
+  top: var(--cursor-y);
+  left: var(--cursor-x);
+  z-index: 30;
+  width: var(--awards-item-cursor-size);
+  height: var(--awards-item-cursor-size);
+  border: 2px solid var(--foreground);
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translate(
+      var(--awards-item-cursor-offset-x),
+      calc(-100% - var(--awards-item-cursor-offset-y))
+    )
+    scale(0.5);
+  opacity: 0;
+  transition:
+    transform 0.25s var(--awards-ease),
+    opacity 0.2s ease;
+}
+
+.awards-item__cursor--visible {
+  transform: translate(
+      var(--awards-item-cursor-offset-x),
+      calc(-100% - var(--awards-item-cursor-offset-y))
+    )
+    scale(1);
+  opacity: 1;
+}
+
+.awards-item__cursor-image {
+  object-fit: cover;
+}
+
+.awards-item__curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--background);
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: transform var(--awards-item-curtain-duration) ease;
+  pointer-events: none;
+}
+
+.awards-item__curtain--covering,
+.awards-item__curtain--below {
+  opacity: 1;
+}
+
+.awards-item__curtain--covering {
+  transform: translateY(0);
+}
+
+.awards-item__curtain--below {
+  transform: translateY(100%);
+}
+
+.awards-item__curtain--snap {
+  transition: none;
 }
 
 .awards-item__reveal {
+  position: relative;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -102,30 +190,43 @@
   align-items: center;
   justify-content: space-between;
   transform: translateY(100%);
-  transition: transform var(--awards-content-duration) var(--awards-ease);
-  transition-delay: calc(var(--content-order) * var(--awards-content-stagger));
+  transition:
+    transform var(--awards-content-duration) var(--awards-ease),
+    color var(--awards-item-curtain-duration) ease;
 }
 
 @media (width >= 48rem) {
   .awards-item__row {
     gap: 1.5rem 2.5rem;
-    padding: 1rem 0;
+    padding: 1rem;
   }
 }
 
 .awards-list--content-visible .awards-item__row {
   transform: translateY(0);
+  transition-delay: calc(var(--content-order) * var(--awards-content-stagger));
+}
+
+.awards-item--hovered .awards-item__title,
+.awards-item--hovered .awards-item__icon {
+  color: var(--foreground);
+}
+
+.awards-item--hovered .awards-item__description {
+  color: rgb(18 15 15 / 0.72);
 }
 
 .awards-item__title {
   font-size: clamp(1.25rem, 1.6vw, 2rem);
   line-height: 1.1;
+  transition: color var(--awards-item-curtain-duration) ease;
 }
 
 .awards-item__description {
   font-size: clamp(0.875rem, 1vw, 1.125rem);
   line-height: 1.4;
   color: rgb(255 255 255 / 0.72);
+  transition: color var(--awards-item-curtain-duration) ease;
 }
 
 .awards-item__icon {
@@ -135,6 +236,7 @@
   width: 2.5rem;
   height: 2.5rem;
   color: var(--background);
+  transition: color var(--awards-item-curtain-duration) ease;
 }
 
 .awards-item__icon svg {
@@ -143,12 +245,19 @@
 }
 
 .awards-item__line {
+  position: relative;
+  z-index: 1;
   height: 1px;
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(72 68 68);
   transform: scaleX(0);
   transform-origin: right center;
+  opacity: 0;
   will-change: transform;
   transition: transform 0.08s linear;
+}
+
+.awards-item--hovered .awards-item__line {
+  background: rgb(18 15 15 / 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -168,5 +277,18 @@
   .awards-item__row {
     transition: none;
     transform: translateY(0);
+  }
+
+  .awards-item__curtain {
+    transition: none;
+  }
+
+  .awards-item--hovered .awards-item__curtain,
+  .awards-item:focus-within .awards-item__curtain--covering {
+    transform: translateY(0);
+  }
+
+  .awards-item__cursor {
+    display: none;
   }
 }
