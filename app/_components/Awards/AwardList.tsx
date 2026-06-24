@@ -1,6 +1,7 @@
 "use client";
 
 import type { StaticImageData } from "next/image";
+import type { CSSProperties } from "react";
 import AwardItem from "./AwardItem";
 import "./awards.css";
 
@@ -29,15 +30,21 @@ const AwardList = ({
       ]
         .filter(Boolean)
         .join(" ")}
+      style={{ "--award-count": awards.length } as CSSProperties}
     >
-      {awards.map((award, index) => (
-        <AwardItem
-          key={award.title}
-          award={award}
-          index={index}
-          lineProgress={lineProgress[index] ?? 0}
-        />
-      ))}
+      {awards.map((award, index) => {
+        const progress = lineProgress[index] ?? 0;
+
+        return (
+          <AwardItem
+            key={award.title}
+            award={award}
+            index={index}
+            lineProgress={progress}
+            isInteractive={contentVisible && progress >= 0.92}
+          />
+        );
+      })}
     </div>
   );
 };

@@ -21,23 +21,24 @@ type AwardItemProps = {
   };
   index: number;
   lineProgress: number;
+  isInteractive: boolean;
 };
 
 const CURSOR_LERP = 0.12;
 
-const AwardIcon = () => (
+const AwardArrowIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" aria-hidden>
-    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" />
     <path
-      d="M8 14h8l1 6H7l1-6z"
+      d="M7 17L17 7M17 7H9M17 7V15"
       stroke="currentColor"
       strokeWidth="1.5"
+      strokeLinecap="round"
       strokeLinejoin="round"
     />
   </svg>
 );
 
-const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
+const AwardItem = ({ award, index, lineProgress, isInteractive }: AwardItemProps) => {
   const itemRef = useRef<HTMLElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
   const targetRef = useRef({ x: 0, y: 0 });
@@ -100,6 +101,8 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
 
   const showCurtain = useCallback(
     (event: MouseEvent<HTMLElement>) => {
+      if (!isInteractive) return;
+
       setCurtainSnap(false);
       setCurtainState("covering");
       setTargetFromEvent(event);
@@ -110,7 +113,7 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
       setCursorVisible(true);
       startFollowing();
     },
-    [setCursorPosition, setTargetFromEvent, startFollowing],
+    [isInteractive, setCursorPosition, setTargetFromEvent, startFollowing],
   );
 
   const hideCurtain = useCallback(() => {
@@ -121,17 +124,20 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
 
   const updatePointer = useCallback(
     (event: MouseEvent<HTMLElement>) => {
+      if (!isInteractive) return;
       setTargetFromEvent(event);
     },
-    [setTargetFromEvent],
+    [isInteractive, setTargetFromEvent],
   );
 
   const handleFocus = useCallback(() => {
+    if (!isInteractive) return;
+
     setCurtainSnap(false);
     setCurtainState("covering");
     setCursorVisible(true);
     startFollowing();
-  }, [startFollowing]);
+  }, [isInteractive, startFollowing]);
 
   const handleCurtainTransitionEnd = useCallback(
     (event: TransitionEvent<HTMLSpanElement>) => {
@@ -148,6 +154,19 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
   );
 
   useEffect(() => () => stopFollowing(), [stopFollowing]);
+
+  useEffect(() => {
+    if (isInteractive) return;
+
+    setCurtainSnap(true);
+    setCurtainState("above");
+    setCursorVisible(false);
+    stopFollowing();
+
+    requestAnimationFrame(() => {
+      setCurtainSnap(false);
+    });
+  }, [isInteractive, stopFollowing]);
 
   const curtainClassName = [
     "awards-item__curtain",
@@ -171,6 +190,7 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
       ref={itemRef}
       className={[
         "awards-item",
+        isInteractive ? "awards-item--interactive" : "awards-item--inactive",
         isHovered ? "awards-item--hovered" : "",
       ]
         .filter(Boolean)
@@ -181,7 +201,8 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
       onMouseMove={updatePointer}
       onFocus={handleFocus}
       onBlur={hideCurtain}
-      tabIndex={0}
+      tabIndex={isInteractive ? 0 : -1}
+      aria-hidden={!isInteractive}
     >
       <span ref={cursorRef} className={cursorClassName} aria-hidden>
         <Image
@@ -203,7 +224,7 @@ const AwardItem = ({ award, index, lineProgress }: AwardItemProps) => {
             <h3 className="awards-item__title">{award.title}</h3>
             <p className="awards-item__description">{award.description}</p>
             <span className="awards-item__icon" aria-hidden>
-              <AwardIcon />
+              <AwardArrowIcon />
             </span>
           </div>
         </div>

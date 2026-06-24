@@ -10,8 +10,23 @@ type AwardsScrollProps = {
 };
 
 const LINE_LERP = 0.1;
+const CONTENT_VISIBLE_THRESHOLD = 0.92;
 
 const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
+
+const parseCssLength = (value: string, viewportHeight: number) => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return 0;
+  if (trimmed.endsWith("vh")) {
+    return (parseFloat(trimmed) / 100) * viewportHeight;
+  }
+  if (trimmed.endsWith("px")) {
+    return parseFloat(trimmed);
+  }
+
+  return 0;
+};
 
 const getLineTarget = (scrollProgress: number, index: number, count: number) => {
   const spread = 1 / count;
@@ -26,10 +41,9 @@ const getLineTarget = (scrollProgress: number, index: number, count: number) => 
 const AwardsScroll = ({ awards }: AwardsScrollProps) => {
   const zoneRef = useRef<HTMLDivElement>(null);
   const scrollProgressRef = useRef(0);
+  const animationProgressRef = useRef(0);
   const targetRef = useRef<number[]>(awards.map(() => 0));
   const currentRef = useRef<number[]>(awards.map(() => 0));
-  const linesLockedRef = useRef(false);
-  const contentShownRef = useRef(false);
   const rafRef = useRef<number | null>(null);
 
   const [lineProgress, setLineProgress] = useState<number[]>(() =>
@@ -41,21 +55,32 @@ const AwardsScroll = ({ awards }: AwardsScrollProps) => {
     const zone = zoneRef.current;
     if (!zone) return;
 
-    const measureScrollProgress = () => {
+    const measureScrollMetrics = () => {
       const viewportHeight = window.innerHeight;
       const zoneHeight = zone.offsetHeight;
       const scrollable = zoneHeight - viewportHeight;
       const rect = zone.getBoundingClientRect();
 
-      if (scrollable <= 0) return 1;
+      if (scrollable <= 0) {
+        return { animationProgress: 1, scrollProgress: 1 };
+      }
 
       const scrolled = Math.min(Math.max(-rect.top, 0), scrollable);
-      return scrolled / scrollable;
+      const scrollProgress = scrolled / scrollable;
+      const tailPx = parseCssLength(
+        getComputedStyle(zone).getPropertyValue("--awards-scroll-tail"),
+        viewportHeight,
+      );
+      const animationScrollable = Math.max(scrollable - tailPx, 1);
+      const animationProgress = Math.min(scrolled / animationScrollable, 1);
+
+      return { animationProgress, scrollProgress };
     };
 
     const updateTargets = () => {
-      const progress = measureScrollProgress();
-      scrollProgressRef.current = progress;
+      const { animationProgress, scrollProgress } = measureScrollMetrics();
+      scrollProgressRef.current = scrollProgress;
+      animationProgressRef.current = animationProgress;
 
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
@@ -65,72 +90,41 @@ const AwardsScroll = ({ awards }: AwardsScrollProps) => {
         const rect = zone.getBoundingClientRect();
         if (rect.top < window.innerHeight) {
           scrollProgressRef.current = 1;
+          animationProgressRef.current = 1;
           targetRef.current = awards.map(() => 1);
-          linesLockedRef.current = true;
-          contentShownRef.current = true;
+          setContentVisible(true);
         }
         return;
       }
 
-      if (linesLockedRef.current) {
-        targetRef.current = awards.map(() => 1);
-        return;
-      }
-
       targetRef.current = awards.map((_, index) =>
-        getLineTarget(progress, index, awards.length),
+        getLineTarget(animationProgress, index, awards.length),
       );
-
-      if (
-        progress >= 0.999 ||
-        targetRef.current.every((value) => value >= 0.998)
-      ) {
-        targetRef.current = awards.map(() => 1);
-        linesLockedRef.current = true;
-        contentShownRef.current = true;
-      }
     };
 
     const tick = () => {
-      if (linesLockedRef.current) {
+      const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      if (reducedMotion) {
         currentRef.current = awards.map(() => 1);
         setLineProgress(awards.map(() => 1));
-        setContentVisible(true);
+        rafRef.current = requestAnimationFrame(tick);
         return;
       }
 
       const current = currentRef.current;
       const target = targetRef.current;
-      let settled = true;
 
       for (let index = 0; index < awards.length; index += 1) {
-        const next = current[index] + (target[index] - current[index]) * LINE_LERP;
-
-        if (Math.abs(next - target[index]) > 0.001) {
-          settled = false;
-        }
-
-        current[index] = next;
+        current[index] += (target[index] - current[index]) * LINE_LERP;
       }
 
       setLineProgress([...current]);
-
-      if (
-        settled &&
-        target.every((value) => value >= 0.998) &&
-        current.every((value) => value >= 0.998)
-      ) {
-        linesLockedRef.current = true;
-        contentShownRef.current = true;
-        currentRef.current = awards.map(() => 1);
-        setLineProgress(awards.map(() => 1));
-        setContentVisible(true);
-        return;
-      }
-
-      if (contentShownRef.current) {
-        setContentVisible(true);
-      }
+      setContentVisible(
+        animationProgressRef.current >= CONTENT_VISIBLE_THRESHOLD,
+      );
 
       rafRef.current = requestAnimationFrame(tick);
     };

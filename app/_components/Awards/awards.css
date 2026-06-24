@@ -1,13 +1,17 @@
 .awards {
   --awards-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --awards-scroll-step: 50vh;
+  --awards-scroll-tail: 50vh;
   --awards-content-duration: 1.2s;
   --awards-content-stagger: 0.2s;
 }
 
 .awards__scroll-zone {
   --award-count: 4;
-  height: calc(100vh + var(--award-count) * var(--awards-scroll-step));
+  height: calc(
+    100vh + var(--award-count) * var(--awards-scroll-step) +
+      var(--awards-scroll-tail)
+  );
   position: relative;
 }
 
@@ -77,6 +81,16 @@
   cursor: grab;
   touch-action: none;
   user-select: none;
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity 1.4s var(--awards-ease),
+    transform 1.4s var(--awards-ease);
+}
+
+.awards__trophy--visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .awards__trophy--dragging {
@@ -104,7 +118,15 @@
 
   position: relative;
   overflow: visible;
+}
+
+.awards-item--interactive {
   cursor: pointer;
+}
+
+.awards-item--inactive {
+  pointer-events: none;
+  cursor: default;
 }
 
 .awards-item__clip {
@@ -193,6 +215,9 @@
   transition:
     transform var(--awards-content-duration) var(--awards-ease),
     color var(--awards-item-curtain-duration) ease;
+  transition-delay: calc(
+    (var(--award-count) - 1 - var(--content-order)) * var(--awards-content-stagger)
+  );
 }
 
 @media (width >= 48rem) {
@@ -290,5 +315,11 @@
 
   .awards-item__cursor {
     display: none;
+  }
+
+  .awards__trophy {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

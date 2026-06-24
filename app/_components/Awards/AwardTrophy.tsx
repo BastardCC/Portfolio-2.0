@@ -5,6 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Suspense,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -26,6 +27,9 @@ const TROPHY_ROTATION_TURNS = 0.6;
 const DRAG_ROTATION_SENSITIVITY = 0.005;
 const MAX_PITCH_ROTATION = Math.PI / 2.5;
 const TROPHY_TARGET_SIZE = 2.6;
+const TROPHY_APPEAR_DURATION = 1.4;
+
+const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
 
 type DragRotation = {
   x: number;
@@ -64,13 +68,16 @@ const getModelScale = (object: Object3D) => {
 type TrophyModelProps = {
   scrollProgressRef: RefObject<number>;
   dragRotationRef: RefObject<DragRotation>;
+  hasAppeared: boolean;
 };
 
 const TrophyModel = ({
   scrollProgressRef,
   dragRotationRef,
+  hasAppeared,
 }: TrophyModelProps) => {
   const groupRef = useRef<Group>(null);
+  const appearRef = useRef(0);
   const { scene } = useGLTF(TROPHY_URL);
   const model = useMemo(() => {
     const cloned = scene.clone(true);
@@ -79,13 +86,31 @@ const TrophyModel = ({
   }, [scene]);
   const modelScale = useMemo(() => getModelScale(model), [model]);
 
-  useFrame(() => {
+  useEffect(() => {
+    if (!hasAppeared) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      appearRef.current = 1;
+    }
+  }, [hasAppeared]);
+
+  useFrame((_, delta) => {
     if (!groupRef.current) return;
+
+    if (hasAppeared && appearRef.current < 1) {
+      appearRef.current = Math.min(
+        1,
+        appearRef.current + delta / TROPHY_APPEAR_DURATION,
+      );
+    }
+
+    const appearScale = 0.72 + easeOutCubic(appearRef.current) * 0.28;
 
     groupRef.current.rotation.x = dragRotationRef.current.x;
     groupRef.current.rotation.y =
       scrollProgressRef.current * Math.PI * 2 * TROPHY_ROTATION_TURNS +
       dragRotationRef.current.y;
+    groupRef.current.scale.setScalar(appearScale);
   });
 
   return (
@@ -109,6 +134,7 @@ const AwardTrophy = ({ scrollProgressRef }: AwardTrophyProps) => {
   const lastPointerYRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [hasAppeared, setHasAppeared] = useState(false);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -126,6 +152,34 @@ const AwardTrophy = ({ scrollProgressRef }: AwardTrophyProps) => {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reducedMotion) {
+      setHasAppeared(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasAppeared(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [isReady]);
 
   const handlePointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
     isDraggingRef.current = true;
@@ -169,6 +223,7 @@ const AwardTrophy = ({ scrollProgressRef }: AwardTrophyProps) => {
       ref={containerRef}
       className={[
         "awards__trophy",
+        hasAppeared ? "awards__trophy--visible" : "",
         isDragging ? "awards__trophy--dragging" : "",
       ]
         .filter(Boolean)
@@ -207,6 +262,7 @@ const AwardTrophy = ({ scrollProgressRef }: AwardTrophyProps) => {
             <TrophyModel
               scrollProgressRef={scrollProgressRef}
               dragRotationRef={dragRotationRef}
+              hasAppeared={hasAppeared}
             />
           </Suspense>
         </Canvas>
