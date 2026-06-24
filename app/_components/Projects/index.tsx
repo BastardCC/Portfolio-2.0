@@ -1,5 +1,5 @@
 import RevealText from "../RevealText";
-import ProjectCard from "./ProjectCard";
+import ProjectsGrid from "./ProjectsGrid";
 import Doonation from "./assets/doonation.png";
 
 const projects = [
@@ -50,11 +50,7 @@ const Projects = () => {
         </RevealText>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2">
-        {projects.map((project) => (
-          <ProjectCard key={project.title} {...project} image={Doonation} />
-        ))}
-      </div>
+      <ProjectsGrid projects={projects} image={Doonation} />
     </div>
   );
 };

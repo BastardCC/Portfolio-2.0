@@ -1,0 +1,199 @@
+.projects-grid {
+  --projects-reveal-duration: 0.8s;
+  --projects-reveal-stagger: 0.08s;
+  --projects-reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --projects-line-duration: 2.2s;
+  --projects-line-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --projects-line-stagger: 0.12s;
+
+  position: relative;
+}
+
+@keyframes projects-line-expand-x {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes projects-line-expand-y {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes projects-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(2.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.projects-grid__lines {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.projects-grid__line {
+  position: absolute;
+  background: var(--foreground);
+}
+
+.projects-grid__line--edge {
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: center;
+}
+
+.projects-grid__line--top {
+  top: 0;
+}
+
+.projects-grid__line--middle {
+  top: 50%;
+}
+
+.projects-grid__line--bottom {
+  bottom: 0;
+}
+
+.projects-grid__line--mobile:not(.projects-grid__line--top):not(
+    .projects-grid__line--bottom
+  ) {
+  top: var(--line-position);
+}
+
+.projects-grid__line--vertical-top {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 50%;
+  transform: scaleY(0);
+  transform-origin: bottom center;
+}
+
+.projects-grid__line--vertical-bottom {
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 50%;
+  transform: scaleY(0);
+  transform-origin: top center;
+}
+
+.projects-grid__line--desktop {
+  display: none;
+}
+
+.projects-grid__line--mobile {
+  display: block;
+}
+
+@media (width >= 48rem) {
+  .projects-grid__line--desktop {
+    display: block;
+  }
+
+  .projects-grid__line--mobile {
+    display: none;
+  }
+}
+
+.projects-grid--visible .projects-grid__line--top.projects-grid__line--desktop {
+  animation: projects-line-expand-x var(--projects-line-duration)
+    var(--projects-line-ease) forwards;
+}
+
+.projects-grid--visible .projects-grid__line--middle.projects-grid__line--desktop {
+  animation: projects-line-expand-x var(--projects-line-duration)
+    var(--projects-line-ease) var(--projects-line-stagger) forwards;
+}
+
+.projects-grid--visible
+  .projects-grid__line--vertical-top.projects-grid__line--desktop,
+.projects-grid--visible
+  .projects-grid__line--vertical-bottom.projects-grid__line--desktop {
+  animation: projects-line-expand-y var(--projects-line-duration)
+    var(--projects-line-ease) calc(var(--projects-line-stagger) * 1.5) forwards;
+}
+
+.projects-grid--visible .projects-grid__line--bottom.projects-grid__line--desktop {
+  animation: projects-line-expand-x var(--projects-line-duration)
+    var(--projects-line-ease) calc(var(--projects-line-stagger) * 2) forwards;
+}
+
+.projects-grid--visible .projects-grid__line--top.projects-grid__line--mobile {
+  animation: projects-line-expand-x var(--projects-line-duration)
+    var(--projects-line-ease) forwards;
+}
+
+.projects-grid--visible
+  .projects-grid__line--mobile:not(.projects-grid__line--top):not(
+    .projects-grid__line--bottom
+  ) {
+  animation: projects-line-expand-x var(--projects-line-duration)
+    var(--projects-line-ease) forwards;
+  animation-delay: calc(var(--line-index) * var(--projects-line-stagger));
+}
+
+.projects-grid--visible
+  .projects-grid__line--bottom.projects-grid__line--mobile {
+  animation: projects-line-expand-x var(--projects-line-duration)
+    var(--projects-line-ease) forwards;
+  animation-delay: calc(var(--project-count) * var(--projects-line-stagger));
+}
+
+.projects-grid__item {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(2.75rem);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.projects-grid--visible .projects-grid__item {
+  animation: projects-card-reveal var(--projects-reveal-duration)
+    var(--projects-reveal-ease) forwards;
+  animation-delay: calc(var(--item-index) * var(--projects-reveal-stagger));
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projects-grid__line {
+    transform: none;
+    animation: none;
+  }
+
+  .projects-grid--visible .projects-grid__line--edge {
+    transform: scaleX(1);
+  }
+
+  .projects-grid--visible .projects-grid__line--vertical-top,
+  .projects-grid--visible .projects-grid__line--vertical-bottom {
+    transform: scaleY(1);
+  }
+
+  .projects-grid--visible .projects-grid__item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+}
