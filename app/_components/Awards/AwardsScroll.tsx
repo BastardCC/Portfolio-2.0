@@ -7,6 +7,7 @@ import "./awards.css";
 
 type AwardsScrollProps = {
   awards: Award[];
+  description: string;
 };
 
 const LINE_LERP = 0.1;
@@ -38,7 +39,7 @@ const getLineTarget = (scrollProgress: number, index: number, count: number) => 
   return easeOutQuint(clamped);
 };
 
-const AwardsScroll = ({ awards }: AwardsScrollProps) => {
+const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
   const zoneRef = useRef<HTMLDivElement>(null);
   const scrollProgressRef = useRef(0);
   const animationProgressRef = useRef(0);
@@ -152,10 +153,17 @@ const AwardsScroll = ({ awards }: AwardsScrollProps) => {
       style={{ "--award-count": awards.length } as CSSProperties}
     >
       <div className="awards__sticky">
-        <div className="container">
+        <div className="awards__trophy-bg" aria-hidden>
+          <AwardTrophy scrollProgressRef={scrollProgressRef} decorative />
+        </div>
+
+        <div className="container awards__stage">
           <div className="awards__layout">
-            <div className="awards__panel awards__panel--emblem">
-              <AwardTrophy scrollProgressRef={scrollProgressRef} />
+            <div className="awards__panel awards__panel--intro">
+              <div className="awards__intro">
+                <h2 className="awards__title">Awards</h2>
+                <p className="awards__description">{description}</p>
+              </div>
             </div>
             <div className="awards__panel awards__panel--list">
               <AwardList

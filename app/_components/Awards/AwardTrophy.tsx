@@ -1,6 +1,6 @@
 "use client";
 
-import { Center, Environment, useGLTF } from "@react-three/drei";
+import { Bounds, Center, ContactShadows, Environment, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Suspense,
@@ -27,6 +27,9 @@ const TROPHY_ROTATION_TURNS = 0.6;
 const DRAG_ROTATION_SENSITIVITY = 0.005;
 const MAX_PITCH_ROTATION = Math.PI / 2.5;
 const TROPHY_TARGET_SIZE = 2.6;
+const TROPHY_DECORATIVE_TARGET_SIZE = 5;
+const TROPHY_BASE_TILT_X = 0.38;
+const TROPHY_BASE_TILT_Z = -0.22;
 const TROPHY_APPEAR_DURATION = 1.4;
 
 const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
@@ -36,7 +39,7 @@ type DragRotation = {
   y: number;
 };
 
-const enhanceGoldMaterials = (object: Object3D) => {
+const enhanceGoldMaterials = (object: Object3D, decorative = false) => {
   object.traverse((child) => {
     if (!(child instanceof Mesh)) return;
 
@@ -47,44 +50,65 @@ const enhanceGoldMaterials = (object: Object3D) => {
     materials.forEach((material) => {
       if (!(material instanceof MeshStandardMaterial)) return;
 
-      material.envMapIntensity = 1.8;
-      material.metalness = Math.min(material.metalness + 0.15, 1);
-      material.roughness = Math.max(material.roughness - 0.12, 0.18);
+      if (decorative) {
+        material.envMapIntensity = 0.5;
+        material.metalness = Math.min(material.metalness + 0.05, 0.82);
+        material.roughness = Math.max(material.roughness + 0.22, 0.45);
+      } else {
+        material.envMapIntensity = 1.8;
+        material.metalness = Math.min(material.metalness + 0.15, 1);
+        material.roughness = Math.max(material.roughness - 0.12, 0.18);
+      }
+
       material.needsUpdate = true;
     });
+
+    if (decorative) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
   });
 };
 
-const getModelScale = (object: Object3D) => {
+const getModelScale = (object: Object3D, targetSize = TROPHY_TARGET_SIZE) => {
   const box = new Box3().setFromObject(object);
   const size = box.getSize(new Vector3());
   const maxDimension = Math.max(size.x, size.y, size.z);
 
   if (maxDimension <= 0) return 1;
 
-  return TROPHY_TARGET_SIZE / maxDimension;
+  return targetSize / maxDimension;
 };
 
 type TrophyModelProps = {
   scrollProgressRef: RefObject<number>;
   dragRotationRef: RefObject<DragRotation>;
   hasAppeared: boolean;
+  decorative?: boolean;
 };
 
 const TrophyModel = ({
   scrollProgressRef,
   dragRotationRef,
   hasAppeared,
+  decorative = false,
 }: TrophyModelProps) => {
   const groupRef = useRef<Group>(null);
   const appearRef = useRef(0);
   const { scene } = useGLTF(TROPHY_URL);
   const model = useMemo(() => {
     const cloned = scene.clone(true);
-    enhanceGoldMaterials(cloned);
+    enhanceGoldMaterials(cloned, decorative);
     return cloned;
-  }, [scene]);
-  const modelScale = useMemo(() => getModelScale(model), [model]);
+  }, [decorative, scene]);
+  const modelScale = useMemo(
+    () =>
+      getModelScale(
+        model,
+        decorative ? TROPHY_DECORATIVE_TARGET_SIZE : TROPHY_TARGET_SIZE,
+      ),
+    [decorative, model],
+  );
 
   useEffect(() => {
     if (!hasAppeared) return;
@@ -104,12 +128,16 @@ const TrophyModel = ({
       );
     }
 
-    const appearScale = 0.72 + easeOutCubic(appearRef.current) * 0.28;
+    const appearScale = decorative
+      ? 0.88 + easeOutCubic(appearRef.current) * 0.12
+      : 0.72 + easeOutCubic(appearRef.current) * 0.28;
 
-    groupRef.current.rotation.x = dragRotationRef.current.x;
+    groupRef.current.rotation.x =
+      (decorative ? TROPHY_BASE_TILT_X : 0) + dragRotationRef.current.x;
     groupRef.current.rotation.y =
       scrollProgressRef.current * Math.PI * 2 * TROPHY_ROTATION_TURNS +
       dragRotationRef.current.y;
+    groupRef.current.rotation.z = decorative ? TROPHY_BASE_TILT_Z : 0;
     groupRef.current.scale.setScalar(appearScale);
   });
 
@@ -124,9 +152,13 @@ const TrophyModel = ({
 
 type AwardTrophyProps = {
   scrollProgressRef: RefObject<number>;
+  decorative?: boolean;
 };
 
-const AwardTrophy = ({ scrollProgressRef }: AwardTrophyProps) => {
+const AwardTrophy = ({
+  scrollProgressRef,
+  decorative = false,
+}: AwardTrophyProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRotationRef = useRef<DragRotation>({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
@@ -223,47 +255,96 @@ const AwardTrophy = ({ scrollProgressRef }: AwardTrophyProps) => {
       ref={containerRef}
       className={[
         "awards__trophy",
+        decorative ? "awards__trophy--decorative" : "",
         hasAppeared ? "awards__trophy--visible" : "",
         isDragging ? "awards__trophy--dragging" : "",
       ]
         .filter(Boolean)
         .join(" ")}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={endDrag}
-      onPointerLeave={endDrag}
-      onPointerCancel={endDrag}
+      onPointerDown={decorative ? undefined : handlePointerDown}
+      onPointerMove={decorative ? undefined : handlePointerMove}
+      onPointerUp={decorative ? undefined : endDrag}
+      onPointerLeave={decorative ? undefined : endDrag}
+      onPointerCancel={decorative ? undefined : endDrag}
       role="img"
-      aria-label="Trophée 3D — faire glisser pour le faire tourner dans toutes les directions"
+      aria-hidden={decorative}
+      aria-label={
+        decorative
+          ? undefined
+          : "Trophée 3D — faire glisser pour le faire tourner dans toutes les directions"
+      }
     >
       {isReady ? (
         <Canvas
-          camera={{ position: [0, 1.2, 6.5], fov: 32 }}
+          shadows={decorative ? "percentage" : false}
+          camera={{
+            position: decorative ? [0, 0, 10] : [0, 1.2, 6.5],
+            fov: 32,
+          }}
           dpr={[1, 2]}
           gl={{ alpha: true, antialias: true }}
           onCreated={({ gl }) => {
-            gl.toneMappingExposure = 1.35;
+            gl.toneMappingExposure = decorative ? 1.05 : 1.35;
           }}
         >
-          <ambientLight intensity={1.15} color="#fff8e8" />
-          <directionalLight
-            intensity={2.2}
-            position={[4, 6, 5]}
-            color="#fff5d0"
+          <ambientLight
+            intensity={decorative ? 0.35 : 1.15}
+            color={decorative ? "#8a8070" : "#fff8e8"}
           />
           <directionalLight
-            intensity={1.1}
+            castShadow={decorative}
+            intensity={decorative ? 1.65 : 2.2}
+            position={decorative ? [5, 9, 4] : [4, 6, 5]}
+            color={decorative ? "#c9b07a" : "#fff5d0"}
+            shadow-mapSize={decorative ? [1024, 1024] : undefined}
+            shadow-bias={decorative ? -0.0002 : undefined}
+            shadow-camera-far={decorative ? 24 : undefined}
+            shadow-camera-left={decorative ? -6 : undefined}
+            shadow-camera-right={decorative ? 6 : undefined}
+            shadow-camera-top={decorative ? 6 : undefined}
+            shadow-camera-bottom={decorative ? -6 : undefined}
+          />
+          <directionalLight
+            intensity={decorative ? 0.25 : 1.1}
             position={[-4, 2, 4]}
             color="#ffe8b8"
           />
-          <pointLight intensity={0.9} position={[0, 1.5, 2]} color="#ffffff" />
+          <pointLight
+            intensity={decorative ? 0.2 : 0.9}
+            position={[0, 1.5, 2]}
+            color="#ffffff"
+          />
           <Suspense fallback={null}>
-            <Environment preset="city" environmentIntensity={1.1} />
-            <TrophyModel
-              scrollProgressRef={scrollProgressRef}
-              dragRotationRef={dragRotationRef}
-              hasAppeared={hasAppeared}
+            <Environment
+              preset="city"
+              environmentIntensity={decorative ? 0.35 : 1.1}
             />
+            {decorative ? (
+              <>
+                <Bounds fit observe margin={1.12}>
+                  <TrophyModel
+                    scrollProgressRef={scrollProgressRef}
+                    dragRotationRef={dragRotationRef}
+                    hasAppeared={hasAppeared}
+                    decorative
+                  />
+                </Bounds>
+                <ContactShadows
+                  position={[0, -1.45, 0]}
+                  opacity={0.62}
+                  scale={16}
+                  blur={3}
+                  far={5.5}
+                  color="#000000"
+                />
+              </>
+            ) : (
+              <TrophyModel
+                scrollProgressRef={scrollProgressRef}
+                dragRotationRef={dragRotationRef}
+                hasAppeared={hasAppeared}
+              />
+            )}
           </Suspense>
         </Canvas>
       ) : null}
