@@ -39,7 +39,7 @@ type DragRotation = {
   y: number;
 };
 
-const enhanceGoldMaterials = (object: Object3D, decorative = false) => {
+const enhanceGoldMaterials = (object: Object3D) => {
   object.traverse((child) => {
     if (!(child instanceof Mesh)) return;
 
@@ -50,16 +50,9 @@ const enhanceGoldMaterials = (object: Object3D, decorative = false) => {
     materials.forEach((material) => {
       if (!(material instanceof MeshStandardMaterial)) return;
 
-      if (decorative) {
-        material.envMapIntensity = 0.5;
-        material.metalness = Math.min(material.metalness + 0.05, 0.82);
-        material.roughness = Math.max(material.roughness + 0.22, 0.45);
-      } else {
-        material.envMapIntensity = 1.8;
-        material.metalness = Math.min(material.metalness + 0.15, 1);
-        material.roughness = Math.max(material.roughness - 0.12, 0.18);
-      }
-
+      material.envMapIntensity = 1.8;
+      material.metalness = Math.min(material.metalness + 0.15, 1);
+      material.roughness = Math.max(material.roughness - 0.12, 0.18);
       material.needsUpdate = true;
     });
   });
@@ -93,9 +86,9 @@ const TrophyModel = ({
   const { scene } = useGLTF(TROPHY_URL);
   const model = useMemo(() => {
     const cloned = scene.clone(true);
-    enhanceGoldMaterials(cloned, decorative);
+    enhanceGoldMaterials(cloned);
     return cloned;
-  }, [decorative, scene]);
+  }, [scene]);
   const modelScale = useMemo(
     () =>
       getModelScale(
@@ -124,7 +117,7 @@ const TrophyModel = ({
     }
 
     const appearScale = decorative
-      ? 0.88 + easeOutCubic(appearRef.current) * 0.12
+      ? 1
       : 0.72 + easeOutCubic(appearRef.current) * 0.28;
 
     groupRef.current.rotation.x =
@@ -279,36 +272,26 @@ const AwardTrophy = ({
           dpr={[1, 2]}
           gl={{ alpha: true, antialias: true }}
           onCreated={({ gl }) => {
-            gl.toneMappingExposure = decorative ? 1.05 : 1.35;
+            gl.toneMappingExposure = 1.35;
           }}
         >
-          <ambientLight
-            intensity={decorative ? 0.35 : 1.15}
-            color={decorative ? "#8a8070" : "#fff8e8"}
+          <ambientLight intensity={1.15} color="#fff8e8" />
+          <directionalLight
+            intensity={2.2}
+            position={[4, 6, 5]}
+            color="#fff5d0"
           />
           <directionalLight
-            intensity={decorative ? 1.65 : 2.2}
-            position={decorative ? [5, 9, 4] : [4, 6, 5]}
-            color={decorative ? "#c9b07a" : "#fff5d0"}
-          />
-          <directionalLight
-            intensity={decorative ? 0.25 : 1.1}
+            intensity={1.1}
             position={[-4, 2, 4]}
             color="#ffe8b8"
           />
-          <pointLight
-            intensity={decorative ? 0.2 : 0.9}
-            position={[0, 1.5, 2]}
-            color="#ffffff"
-          />
+          <pointLight intensity={0.9} position={[0, 1.5, 2]} color="#ffffff" />
           <Suspense fallback={null}>
-            <Environment
-              preset="city"
-              environmentIntensity={decorative ? 0.35 : 1.1}
-            />
+            <Environment preset="city" environmentIntensity={1.1} />
             {decorative ? (
               <>
-                <Bounds fit observe margin={1.12}>
+                <Bounds fit margin={1.12}>
                   <TrophyModel
                     scrollProgressRef={scrollProgressRef}
                     dragRotationRef={dragRotationRef}

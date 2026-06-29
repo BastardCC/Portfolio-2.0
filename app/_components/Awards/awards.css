@@ -26,10 +26,12 @@
   align-items: center;
   padding-block: clamp(3rem, 8vh, 5rem);
   overflow: visible;
+  isolation: isolate;
 }
 
 .awards__stage {
   position: relative;
+  z-index: 2;
   isolation: isolate;
   width: 100%;
 }
@@ -45,31 +47,21 @@
   overflow: hidden;
 }
 
-.awards__trophy-bg::after {
-  content: "";
+.awards__content-shade {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse 78% 72% at 50% 52%,
-    rgb(0 0 0 / 0.62) 0%,
-    rgb(0 0 0 / 0.34) 42%,
-    transparent 72%
-  );
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
+  background: rgb(0 0 0 / 0.38);
 }
 
 .awards__panel--intro,
 .awards__panel--list {
   position: relative;
-  z-index: 2;
 }
 
 .awards__layout {
   position: relative;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
@@ -93,7 +85,6 @@
   gap: 0.75rem;
   position: relative;
   z-index: 1;
-  text-shadow: 0 2px 28px rgb(0 0 0 / 0.75);
 }
 
 .awards__title {
@@ -106,13 +97,12 @@
   max-width: 28rem;
   font-size: clamp(1.0625rem, 0.6vw + 0.85rem, 1.3125rem);
   line-height: 1.5;
-  color: rgb(255 255 255 / 0.85);
+  color: rgb(255 255 255 / 0.72);
 }
 
 .awards__panel--list {
   display: flex;
   align-items: center;
-  text-shadow: 0 1px 20px rgb(0 0 0 / 0.7);
 }
 
 @media (width >= 64rem) {

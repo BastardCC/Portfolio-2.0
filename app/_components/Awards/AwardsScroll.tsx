@@ -157,6 +157,8 @@ const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
           <AwardTrophy scrollProgressRef={scrollProgressRef} decorative />
         </div>
 
+        <div className="awards__content-shade" aria-hidden />
+
         <div className="container awards__stage">
           <div className="awards__layout">
             <div className="awards__panel awards__panel--intro">
