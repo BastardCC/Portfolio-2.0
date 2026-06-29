@@ -62,11 +62,6 @@ const enhanceGoldMaterials = (object: Object3D, decorative = false) => {
 
       material.needsUpdate = true;
     });
-
-    if (decorative) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
   });
 };
 
@@ -276,7 +271,7 @@ const AwardTrophy = ({
     >
       {isReady ? (
         <Canvas
-          shadows={decorative ? "percentage" : false}
+          shadows={false}
           camera={{
             position: decorative ? [0, 0, 10] : [0, 1.2, 6.5],
             fov: 32,
@@ -292,17 +287,9 @@ const AwardTrophy = ({
             color={decorative ? "#8a8070" : "#fff8e8"}
           />
           <directionalLight
-            castShadow={decorative}
             intensity={decorative ? 1.65 : 2.2}
             position={decorative ? [5, 9, 4] : [4, 6, 5]}
             color={decorative ? "#c9b07a" : "#fff5d0"}
-            shadow-mapSize={decorative ? [1024, 1024] : undefined}
-            shadow-bias={decorative ? -0.0002 : undefined}
-            shadow-camera-far={decorative ? 24 : undefined}
-            shadow-camera-left={decorative ? -6 : undefined}
-            shadow-camera-right={decorative ? 6 : undefined}
-            shadow-camera-top={decorative ? 6 : undefined}
-            shadow-camera-bottom={decorative ? -6 : undefined}
           />
           <directionalLight
             intensity={decorative ? 0.25 : 1.1}
@@ -331,10 +318,10 @@ const AwardTrophy = ({
                 </Bounds>
                 <ContactShadows
                   position={[0, -1.45, 0]}
-                  opacity={0.62}
-                  scale={16}
-                  blur={3}
-                  far={5.5}
+                  opacity={0.42}
+                  scale={9}
+                  blur={2.2}
+                  far={4}
                   color="#000000"
                 />
               </>

@@ -10,7 +10,7 @@ export default function Home() {
       <section className="relative z-0">
         <Hero />
       </section>
-      <section className="relative z-0 my-30">
+      <section className="relative z-10 my-30 bg-background">
         <Projects />
       </section>
       <section className="relative z-0 my-30">

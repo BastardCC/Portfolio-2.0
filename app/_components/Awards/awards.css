@@ -4,7 +4,8 @@
   --awards-scroll-tail: 85vh;
   --awards-content-duration: 1.2s;
   --awards-content-stagger: 0.2s;
-  overflow: visible;
+  position: relative;
+  isolation: isolate;
 }
 
 .awards__scroll-zone {
@@ -35,13 +36,13 @@
 
 .awards__trophy-bg {
   position: absolute;
-  inset: -10vh -6vw;
+  inset: 0;
   z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .awards__trophy-bg::after {
@@ -51,11 +52,13 @@
   z-index: 1;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 78% 72% at 50% 48%,
+    ellipse 78% 72% at 50% 52%,
     rgb(0 0 0 / 0.62) 0%,
     rgb(0 0 0 / 0.34) 42%,
     transparent 72%
   );
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%);
 }
 
 .awards__panel--intro,
