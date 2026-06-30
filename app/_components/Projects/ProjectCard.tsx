@@ -205,10 +205,10 @@ const ProjectCard = ({
       </span>
       <header className="project-card__header">
         <div className="project-card__text-reveal">
-          <h3 className="text-4xl">{title}</h3>
+          <h3 className="project-card__title">{title}</h3>
         </div>
         <div className="project-card__text-reveal project-card__text-reveal--delay">
-          <p>{description}</p>
+          <p className="project-card__description">{description}</p>
         </div>
       </header>
 
@@ -222,7 +222,7 @@ const ProjectCard = ({
         />
         <div className="project-card__media-caption">
           <div className="project-card__text-reveal project-card__text-reveal--in">
-            <h3 className="text-4xl">{title}</h3>
+            <h3 className="project-card__title">{title}</h3>
           </div>
         </div>
       </div>

@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import "./reveal-text.css";
 
 type RevealTextBaseProps = {
@@ -80,6 +87,63 @@ const useRevealInView = (
   return { ref, isVisible };
 };
 
+const REVEAL_ANIMATION_NAMES = new Set([
+  "reveal-text-rise",
+  "reveal-text-descend",
+]);
+
+type RevealTextMaskProps = {
+  direction: "rise" | "descend";
+  isVisible: boolean;
+  className?: string;
+  style?: CSSProperties;
+  children: ReactNode;
+};
+
+const RevealTextMask = forwardRef<HTMLDivElement, RevealTextMaskProps>(
+  function RevealTextMask(
+    { direction, isVisible, className = "", style, children },
+    ref,
+  ) {
+    const [isDone, setIsDone] = useState(false);
+
+    useEffect(() => {
+      if (!isVisible) return;
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setIsDone(true);
+      }
+    }, [isVisible]);
+
+    const handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
+      const target = event.target as HTMLElement;
+      if (target.parentElement !== event.currentTarget) return;
+      if (!REVEAL_ANIMATION_NAMES.has(event.animationName)) return;
+
+      setIsDone(true);
+    };
+
+    return (
+      <div
+        ref={ref}
+        onAnimationEnd={handleAnimationEnd}
+        className={[
+          "reveal-text",
+          `reveal-text--${direction}`,
+          isVisible ? "reveal-text--visible" : "",
+          isDone ? "reveal-text--done" : "",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={style}
+      >
+        {children}
+      </div>
+    );
+  },
+);
+
 const RevealText = ({
   direction = "rise",
   delay,
@@ -109,9 +173,10 @@ const RevealText = ({
         style={revealStyle(delay, duration, staggerDelay)}
       >
         {lines.map((line, index) => (
-          <div
+          <RevealTextMask
             key={`${line}-${index}`}
-            className={`reveal-text reveal-text--${direction}`}
+            direction={direction}
+            isVisible={isVisible}
           >
             <span
               className={`reveal-text__line ${lineClassName}`.trim()}
@@ -119,27 +184,22 @@ const RevealText = ({
             >
               {line}
             </span>
-          </div>
+          </RevealTextMask>
         ))}
       </div>
     );
   }
 
   return (
-    <div
+    <RevealTextMask
       ref={ref}
-      className={[
-        "reveal-text",
-        `reveal-text--${direction}`,
-        isVisible ? "reveal-text--visible" : "",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      direction={direction}
+      isVisible={isVisible}
+      className={className}
       style={revealStyle(delay, duration)}
     >
       {children}
-    </div>
+    </RevealTextMask>
   );
 };
 

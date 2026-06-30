@@ -19,6 +19,27 @@
   z-index: 10;
 }
 
+.hero__title {
+  font-size: clamp(2.75rem, 9vw + 0.5rem, 7rem);
+  line-height: 1.25;
+}
+
+.hero__title-reveal.reveal-text--rise > .hero__title {
+  padding-bottom: 0.35em;
+}
+
+.hero__title-reveal.reveal-text--descend > .hero__title {
+  padding-top: 0.12em;
+  padding-bottom: 0.35em;
+}
+
+@media (width >= 48rem) {
+  .hero__title {
+    font-size: clamp(4rem, 7vw + 1rem, 7rem);
+    line-height: 1.15;
+  }
+}
+
 .hero-circle {
   position: absolute;
   width: auto;

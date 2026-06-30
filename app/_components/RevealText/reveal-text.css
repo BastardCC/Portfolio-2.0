@@ -21,13 +21,20 @@
     overflow: hidden;
   }
 
+  .reveal-text--done {
+    overflow: visible;
+  }
+
   .reveal-text--rise > * {
     display: block;
+    padding-bottom: 0.22em;
     transform: translateY(100%);
   }
 
   .reveal-text--descend > * {
     display: block;
+    padding-top: 0.12em;
+    padding-bottom: 0.12em;
     transform: translateY(-100%);
   }
 
