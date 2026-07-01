@@ -168,6 +168,10 @@
   will-change: opacity, transform;
 }
 
+.projects-grid__item:last-child {
+  z-index: 2;
+}
+
 .projects-grid--visible .projects-grid__item {
   animation: projects-card-reveal var(--projects-reveal-duration)
     var(--projects-reveal-ease) forwards;

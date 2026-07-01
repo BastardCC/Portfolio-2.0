@@ -1,0 +1,49 @@
+.transition-zone {
+  --transition-overlap: clamp(18rem, 54vh, 36rem);
+
+  position: relative;
+  z-index: 25;
+  margin-top: calc(-1 * var(--transition-overlap));
+  height: calc(140vh + var(--transition-overlap));
+  background: transparent;
+  pointer-events: none;
+}
+
+.transition-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.transition-curtains {
+  --curtain-count: 5;
+
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.transition-curtain {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: calc(100% / var(--curtain-count) + 2px);
+  bottom: calc(var(--curtain-index) * (100% / var(--curtain-count)));
+  background: var(--foreground);
+  will-change: transform;
+}
+
+@media (width >= 48rem) {
+  .transition-zone {
+    --transition-overlap: clamp(16rem, 44vh, 30rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transition-zone {
+    display: none;
+  }
+}
