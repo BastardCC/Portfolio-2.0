@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import RevealText from "../RevealText";
 import AwardList, { type Award } from "./AwardList";
 import AwardTrophy from "./AwardTrophy";
 import "./awards.css";
@@ -8,9 +9,13 @@ import "./awards.css";
 type AwardsScrollProps = {
   awards: Award[];
   description: string;
+  onCurtains?: boolean;
+  scrollActive?: boolean;
 };
 
 const LINE_LERP = 0.1;
+const TROPHY_APPEAR_LERP = 0.09;
+const TROPHY_APPEAR_SCROLL_SPAN = 0.2;
 const CONTENT_VISIBLE_THRESHOLD = 0.92;
 
 const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
@@ -39,10 +44,18 @@ const getLineTarget = (scrollProgress: number, index: number, count: number) => 
   return easeOutQuint(clamped);
 };
 
-const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
+const AwardsScroll = ({
+  awards,
+  description,
+  onCurtains = false,
+  scrollActive = true,
+}: AwardsScrollProps) => {
   const zoneRef = useRef<HTMLDivElement>(null);
   const scrollProgressRef = useRef(0);
   const animationProgressRef = useRef(0);
+  const scrollYAtActiveRef = useRef(0);
+  const scrollYAtActiveSetRef = useRef(false);
+  const trophyAppearRef = useRef(0);
   const targetRef = useRef<number[]>(awards.map(() => 0));
   const currentRef = useRef<number[]>(awards.map(() => 0));
   const rafRef = useRef<number | null>(null);
@@ -51,10 +64,11 @@ const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
     awards.map(() => 0),
   );
   const [contentVisible, setContentVisible] = useState(false);
+  const [introActive, setIntroActive] = useState(false);
 
   useEffect(() => {
     const zone = zoneRef.current;
-    if (!zone) return;
+    if (!zone || !scrollActive) return;
 
     const measureScrollMetrics = () => {
       const viewportHeight = window.innerHeight;
@@ -66,16 +80,53 @@ const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
         return { animationProgress: 1, scrollProgress: 1 };
       }
 
-      const scrolled = Math.min(Math.max(-rect.top, 0), scrollable);
-      const scrollProgress = scrolled / scrollable;
+      const rawScrolled = Math.min(Math.max(-rect.top, 0), scrollable);
       const tailPx = parseCssLength(
         getComputedStyle(zone).getPropertyValue("--awards-scroll-tail"),
         viewportHeight,
       );
+      const stepPx = parseCssLength(
+        getComputedStyle(zone).getPropertyValue("--awards-scroll-step"),
+        viewportHeight,
+      );
+
+      if (onCurtains) {
+        const scrolledSinceActive = Math.max(
+          0,
+          window.scrollY - scrollYAtActiveRef.current,
+        );
+        const animationScrollable = Math.max(awards.length * stepPx, 1);
+        const animationProgress = Math.min(
+          scrolledSinceActive / animationScrollable,
+          1,
+        );
+        const scrollProgress = Math.min(
+          scrolledSinceActive / Math.max(animationScrollable + tailPx, 1),
+          1,
+        );
+
+        return { animationProgress, scrollProgress };
+      }
+
+      const scrolled = rawScrolled;
+      const scrollProgress = scrolled / scrollable;
       const animationScrollable = Math.max(scrollable - tailPx, 1);
       const animationProgress = Math.min(scrolled / animationScrollable, 1);
 
       return { animationProgress, scrollProgress };
+    };
+
+    const captureScrollBaseline = () => {
+      if (!onCurtains || scrollYAtActiveSetRef.current) return;
+
+      scrollYAtActiveRef.current = window.scrollY;
+      scrollYAtActiveSetRef.current = true;
+      targetRef.current = awards.map(() => 0);
+      currentRef.current = awards.map(() => 0);
+      setLineProgress(awards.map(() => 0));
+      setContentVisible(false);
+      animationProgressRef.current = 0;
+      scrollProgressRef.current = 0;
     };
 
     const updateTargets = () => {
@@ -123,13 +174,27 @@ const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
       }
 
       setLineProgress([...current]);
+
       setContentVisible(
         animationProgressRef.current >= CONTENT_VISIBLE_THRESHOLD,
       );
 
+      if (onCurtains) {
+        const trophyTarget = Math.min(
+          1,
+          animationProgressRef.current / TROPHY_APPEAR_SCROLL_SPAN,
+        );
+        trophyAppearRef.current +=
+          (trophyTarget - trophyAppearRef.current) * TROPHY_APPEAR_LERP;
+        setIntroActive(animationProgressRef.current > 0.04);
+      } else {
+        setIntroActive(animationProgressRef.current > 0.02);
+      }
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
+    captureScrollBaseline();
     updateTargets();
     rafRef.current = requestAnimationFrame(tick);
 
@@ -144,17 +209,35 @@ const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [awards]);
+  }, [awards, scrollActive, onCurtains]);
+
+  useEffect(() => {
+    if (!scrollActive) {
+      setIntroActive(false);
+      scrollYAtActiveRef.current = 0;
+      scrollYAtActiveSetRef.current = false;
+      trophyAppearRef.current = 0;
+    }
+  }, [scrollActive]);
 
   return (
     <div
       ref={zoneRef}
-      className="awards__scroll-zone"
+      className={[
+        "awards__scroll-zone",
+        onCurtains ? "awards__scroll-zone--on-curtains" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       style={{ "--award-count": awards.length } as CSSProperties}
     >
       <div className="awards__sticky">
         <div className="awards__trophy-bg" aria-hidden>
-          <AwardTrophy scrollProgressRef={scrollProgressRef} decorative />
+          <AwardTrophy
+            scrollProgressRef={scrollProgressRef}
+            decorative
+            appearProgressRef={onCurtains ? trophyAppearRef : undefined}
+          />
         </div>
 
         <div className="awards__content-shade" aria-hidden />
@@ -163,8 +246,32 @@ const AwardsScroll = ({ awards, description }: AwardsScrollProps) => {
           <div className="awards__layout">
             <div className="awards__panel awards__panel--intro">
               <div className="awards__intro">
-                <h2 className="awards__title">Awards</h2>
-                <p className="awards__description">{description}</p>
+                {introActive ? (
+                  <>
+                    <RevealText triggerOnScroll={false} duration={1.2}>
+                      <h2 className="awards__title">Awards</h2>
+                    </RevealText>
+                    <RevealText
+                      triggerOnScroll={false}
+                      duration={1.15}
+                      delay={0.16}
+                    >
+                      <p className="awards__description">{description}</p>
+                    </RevealText>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="awards__title awards__title--pending" aria-hidden>
+                      Awards
+                    </h2>
+                    <p
+                      className="awards__description awards__description--pending"
+                      aria-hidden
+                    >
+                      {description}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
             <div className="awards__panel awards__panel--list">

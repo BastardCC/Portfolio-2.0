@@ -1,45 +1,81 @@
 .transition-zone {
-  --transition-overlap: clamp(18rem, 54vh, 36rem);
+  --transition-overlap: 100vh;
+  --transition-overlap: 100dvh;
+  --curtain-scroll: 385vh;
+  --transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --curtain-seam: 2px;
+  /* Scroll awards uniquement (lignes + marge), sans le viewport déjà couvert par le sticky */
+  --awards-runway: calc(
+    var(--award-count, 4) * 50dvh + 85dvh
+  );
 
   position: relative;
   z-index: 25;
   margin-top: calc(-1 * var(--transition-overlap));
-  height: calc(140vh + var(--transition-overlap));
+  /* Rideaux puis awards, sans double-compter le viewport sticky */
+  height: calc(var(--curtain-scroll) + var(--awards-runway));
   background: transparent;
   pointer-events: none;
+}
+
+/* Invisible tant que l'ancre bas de grille n'a pas déclenché le pin */
+.transition-zone:not(.transition-zone--active) .transition-sticky {
+  visibility: hidden;
 }
 
 .transition-sticky {
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   isolation: isolate;
 }
 
 .transition-curtains {
-  --curtain-count: 5;
-
   position: absolute;
   inset: 0;
   z-index: 1;
+  display: grid;
+  grid-template-rows: repeat(5, 1fr);
+  pointer-events: none;
+}
+
+.transition-curtain-slot {
+  position: relative;
   overflow: hidden;
+  contain: paint;
 }
 
 .transition-curtain {
   position: absolute;
   left: 0;
   width: 100%;
-  height: calc(100% / var(--curtain-count) + 2px);
-  bottom: calc(var(--curtain-index) * (100% / var(--curtain-count)));
+  top: calc(var(--curtain-seam) * -0.5);
+  height: calc(100% + var(--curtain-seam));
   background: var(--foreground);
+  backface-visibility: hidden;
   will-change: transform;
+  transition: transform 1.8s var(--transition-ease);
 }
 
-@media (width >= 48rem) {
-  .transition-zone {
-    --transition-overlap: clamp(16rem, 44vh, 30rem);
-  }
+/* Awards au-dessus des rideaux — chevauche le viewport sticky et remplit la zone */
+.transition-awards-flow {
+  position: relative;
+  z-index: 2;
+  margin-top: -100dvh;
+  height: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.transition-awards-flow--visible {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.transition-awards-flow .awards,
+.transition-awards-flow .awards__scroll-zone {
+  height: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {

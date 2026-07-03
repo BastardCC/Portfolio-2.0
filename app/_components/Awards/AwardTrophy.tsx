@@ -72,6 +72,7 @@ type TrophyModelProps = {
   scrollProgressRef: RefObject<number>;
   dragRotationRef: RefObject<DragRotation>;
   hasAppeared: boolean;
+  appearProgressRef?: RefObject<number>;
   decorative?: boolean;
 };
 
@@ -79,6 +80,7 @@ const TrophyModel = ({
   scrollProgressRef,
   dragRotationRef,
   hasAppeared,
+  appearProgressRef,
   decorative = false,
 }: TrophyModelProps) => {
   const groupRef = useRef<Group>(null);
@@ -99,26 +101,53 @@ const TrophyModel = ({
   );
 
   useEffect(() => {
-    if (!hasAppeared) return;
+    if (appearProgressRef) return;
+
+    if (!hasAppeared) {
+      appearRef.current = 0;
+      return;
+    }
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       appearRef.current = 1;
     }
-  }, [hasAppeared]);
+  }, [hasAppeared, appearProgressRef]);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
+
+    const scrollAppear = appearProgressRef?.current;
+
+    if (scrollAppear !== undefined) {
+      const appearEase = easeOutCubic(scrollAppear);
+      const appearScale = 0.84 + appearEase * 0.16;
+
+      groupRef.current.rotation.x =
+        TROPHY_BASE_TILT_X + dragRotationRef.current.x;
+      groupRef.current.rotation.y =
+        scrollProgressRef.current * Math.PI * 2 * TROPHY_ROTATION_TURNS +
+        dragRotationRef.current.y;
+      groupRef.current.rotation.z = TROPHY_BASE_TILT_Z;
+      groupRef.current.scale.setScalar(appearScale);
+      return;
+    }
 
     if (hasAppeared && appearRef.current < 1) {
       appearRef.current = Math.min(
         1,
         appearRef.current + delta / TROPHY_APPEAR_DURATION,
       );
+    } else if (!hasAppeared && appearRef.current > 0) {
+      appearRef.current = Math.max(
+        0,
+        appearRef.current - delta / TROPHY_APPEAR_DURATION,
+      );
     }
 
+    const appearEase = easeOutCubic(appearRef.current);
     const appearScale = decorative
-      ? 1
-      : 0.72 + easeOutCubic(appearRef.current) * 0.28;
+      ? 0.84 + appearEase * 0.16
+      : 0.72 + appearEase * 0.28;
 
     groupRef.current.rotation.x =
       (decorative ? TROPHY_BASE_TILT_X : 0) + dragRotationRef.current.x;
@@ -141,11 +170,17 @@ const TrophyModel = ({
 type AwardTrophyProps = {
   scrollProgressRef: RefObject<number>;
   decorative?: boolean;
+  /** Progression 0→1 pilotée par le scroll (transition rideaux) */
+  appearProgressRef?: RefObject<number>;
+  /** @deprecated Utiliser appearProgressRef */
+  forceAppear?: boolean;
 };
 
 const AwardTrophy = ({
   scrollProgressRef,
   decorative = false,
+  appearProgressRef,
+  forceAppear,
 }: AwardTrophyProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragRotationRef = useRef<DragRotation>({ x: 0, y: 0 });
@@ -154,7 +189,33 @@ const AwardTrophy = ({
   const lastPointerYRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [hasAppeared, setHasAppeared] = useState(false);
+  const [observedAppear, setObservedAppear] = useState(false);
+  const hasAppeared = appearProgressRef
+    ? (appearProgressRef.current ?? 0) > 0.01
+    : forceAppear === true
+      ? true
+      : forceAppear === false
+        ? false
+        : observedAppear;
+
+  useEffect(() => {
+    if (!appearProgressRef) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    let rafId = 0;
+
+    const syncAppear = () => {
+      const progress = appearProgressRef.current ?? 0;
+      container.style.setProperty("--trophy-appear", String(progress));
+      rafId = requestAnimationFrame(syncAppear);
+    };
+
+    rafId = requestAnimationFrame(syncAppear);
+
+    return () => cancelAnimationFrame(rafId);
+  }, [appearProgressRef]);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -174,6 +235,8 @@ const AwardTrophy = ({
   }, []);
 
   useEffect(() => {
+    if (appearProgressRef !== undefined || forceAppear !== undefined) return;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -182,14 +245,14 @@ const AwardTrophy = ({
     ).matches;
 
     if (reducedMotion) {
-      setHasAppeared(true);
+      setObservedAppear(true);
       return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setHasAppeared(true);
+          setObservedAppear(true);
           observer.disconnect();
         }
       },
@@ -199,7 +262,7 @@ const AwardTrophy = ({
     observer.observe(container);
 
     return () => observer.disconnect();
-  }, [isReady]);
+  }, [appearProgressRef, forceAppear, isReady]);
 
   const handlePointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
     isDraggingRef.current = true;
@@ -244,7 +307,8 @@ const AwardTrophy = ({
       className={[
         "awards__trophy",
         decorative ? "awards__trophy--decorative" : "",
-        hasAppeared ? "awards__trophy--visible" : "",
+        appearProgressRef ? "awards__trophy--scroll-appear" : "",
+        !appearProgressRef && hasAppeared ? "awards__trophy--visible" : "",
         isDragging ? "awards__trophy--dragging" : "",
       ]
         .filter(Boolean)
@@ -296,6 +360,7 @@ const AwardTrophy = ({
                     scrollProgressRef={scrollProgressRef}
                     dragRotationRef={dragRotationRef}
                     hasAppeared={hasAppeared}
+                    appearProgressRef={appearProgressRef}
                     decorative
                   />
                 </Bounds>

@@ -109,6 +109,8 @@ const ProjectsGrid = ({ projects, image }: ProjectsGridProps) => {
           <ProjectCard {...project} image={image} />
         </ProjectCardReveal>
       ))}
+
+      <div className="projects-grid__transition-anchor" aria-hidden />
     </div>
   );
 };

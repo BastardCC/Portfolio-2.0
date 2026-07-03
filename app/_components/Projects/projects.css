@@ -1,3 +1,16 @@
+.projects-pin-target {
+  background: var(--background);
+}
+
+.projects-pin-target--pinned {
+  background: var(--background);
+}
+
+.projects-pin-spacer {
+  width: 100%;
+  pointer-events: none;
+}
+
 .projects-grid {
   --projects-reveal-duration: 0.8s;
   --projects-reveal-stagger: 0.08s;
@@ -170,6 +183,15 @@
 
 .projects-grid__item:last-child {
   z-index: 2;
+}
+
+.projects-grid__transition-anchor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
 }
 
 .projects-grid--visible .projects-grid__item {
