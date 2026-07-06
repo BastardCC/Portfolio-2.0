@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Spline_Sans } from "next/font/google";
 import ScrollToTop from "./_components/ScrollToTop";
+import SmoothScroll from "./_components/SmoothScroll";
 import "./globals.css";
 
 const splineSans = Spline_Sans({
@@ -19,19 +20,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${splineSans.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${splineSans.variable} antialiased`}>
       <body className={`${splineSans.className} min-h-full flex flex-col`}>
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "if('scrollRestoration' in history){history.scrollRestoration='manual';}window.scrollTo(0,0);",
-          }}
-        />
-        <ScrollToTop />
-        {children}
+        <SmoothScroll>
+          <script
+            dangerouslySetInnerHTML={{
+              __html:
+                "if('scrollRestoration' in history){history.scrollRestoration='manual';}window.scrollTo(0,0);",
+            }}
+          />
+          <ScrollToTop />
+          {children}
+        </SmoothScroll>
       </body>
     </html>
   );

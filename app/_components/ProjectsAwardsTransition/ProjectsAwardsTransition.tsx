@@ -11,6 +11,7 @@ import {
   areCurtainsComplete,
   getCurtainAppear,
 } from "./transition-math";
+import { getScrollY, subscribeScrollFrame } from "../scroll-frame";
 import "./projects-awards-transition.css";
 
 const PIN_TARGET_SELECTOR = ".projects-pin-target";
@@ -88,9 +89,9 @@ const ProjectsAwardsTransition = () => {
       spacerRef.current = spacer;
 
       pinTarget.style.position = "fixed";
-      pinTarget.style.top = `${Math.round(rect.top)}px`;
-      pinTarget.style.left = `${Math.round(rect.left)}px`;
-      pinTarget.style.width = `${Math.round(rect.width)}px`;
+      pinTarget.style.top = `${rect.top}px`;
+      pinTarget.style.left = `${rect.left}px`;
+      pinTarget.style.width = `${rect.width}px`;
       pinTarget.style.zIndex = "10";
       pinTarget.classList.add("projects-pin-target--pinned");
       setIsActive(true);
@@ -98,7 +99,7 @@ const ProjectsAwardsTransition = () => {
 
     const update = () => {
       const viewportHeight = window.innerHeight;
-      const scrollY = window.scrollY;
+      const scrollY = getScrollY();
       const pinTarget = document.querySelector<HTMLElement>(PIN_TARGET_SELECTOR);
       const anchor = document.querySelector<HTMLElement>(ANCHOR_SELECTOR);
       const anchorBottom = anchor?.getBoundingClientRect().bottom ?? Infinity;
@@ -170,11 +171,11 @@ const ProjectsAwardsTransition = () => {
     };
 
     update();
-    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    const unsubscribeScroll = subscribeScrollFrame(scheduleUpdate);
     window.addEventListener("resize", scheduleUpdate);
 
     return () => {
-      window.removeEventListener("scroll", scheduleUpdate);
+      unsubscribeScroll();
       window.removeEventListener("resize", scheduleUpdate);
 
       if (rafRef.current !== null) {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import RevealText from "../RevealText";
 import AwardList, { type Award } from "./AwardList";
 import AwardTrophy from "./AwardTrophy";
+import { getScrollY, shouldEmitVisualFrame, subscribeScrollFrame } from "../scroll-frame";
 import "./awards.css";
 
 type AwardsScrollProps = {
@@ -62,6 +63,7 @@ const AwardsScroll = ({
   const targetRef = useRef<number[]>(awards.map(() => 0));
   const currentRef = useRef<number[]>(awards.map(() => 0));
   const rafRef = useRef<number | null>(null);
+  const visualEmitRef = useRef(0);
 
   const [lineProgress, setLineProgress] = useState<number[]>(() =>
     awards.map(() => 0),
@@ -96,7 +98,7 @@ const AwardsScroll = ({
       if (onCurtains) {
         const scrolledSinceActive = Math.max(
           0,
-          window.scrollY - scrollYAtActiveRef.current,
+          getScrollY() - scrollYAtActiveRef.current,
         );
         const animationScrollable = Math.max(awards.length * stepPx, 1);
         const animationProgress = Math.min(
@@ -122,7 +124,7 @@ const AwardsScroll = ({
     const captureScrollBaseline = () => {
       if (!onCurtains || scrollYAtActiveSetRef.current) return;
 
-      scrollYAtActiveRef.current = window.scrollY;
+      scrollYAtActiveRef.current = getScrollY();
       scrollYAtActiveSetRef.current = true;
       targetRef.current = awards.map(() => 0);
       currentRef.current = awards.map(() => 0);
@@ -181,11 +183,20 @@ const AwardsScroll = ({
         current[index] += (target[index] - current[index]) * LINE_LERP;
       }
 
-      setLineProgress([...current]);
+      const { emit, now } = shouldEmitVisualFrame(visualEmitRef.current);
 
-      setContentVisible(
-        animationProgressRef.current >= CONTENT_VISIBLE_THRESHOLD,
-      );
+      if (emit) {
+        visualEmitRef.current = now;
+        setLineProgress([...current]);
+        setContentVisible(
+          animationProgressRef.current >= CONTENT_VISIBLE_THRESHOLD,
+        );
+        setIntroActive(
+          onCurtains
+            ? animationProgressRef.current > 0.04
+            : animationProgressRef.current > 0.02,
+        );
+      }
 
       if (onCurtains) {
         const trophyTarget = Math.min(
@@ -201,10 +212,6 @@ const AwardsScroll = ({
         if (shadeRef.current) {
           shadeRef.current.style.opacity = String(shadeAppearRef.current);
         }
-
-        setIntroActive(animationProgressRef.current > 0.04);
-      } else {
-        setIntroActive(animationProgressRef.current > 0.02);
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -214,12 +221,11 @@ const AwardsScroll = ({
     updateTargets();
     rafRef.current = requestAnimationFrame(tick);
 
-    const onScroll = () => updateTargets();
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const unsubscribeScroll = subscribeScrollFrame(updateTargets);
     window.addEventListener("resize", updateTargets);
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      unsubscribeScroll();
       window.removeEventListener("resize", updateTargets);
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);

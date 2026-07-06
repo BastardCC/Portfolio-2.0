@@ -1,22 +1,23 @@
 "use client";
 
-import { useLayoutEffect } from "react";
-
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-};
+import { useLayoutEffect, useRef } from "react";
 
 const ScrollToTop = () => {
+  const didInitRef = useRef(false);
+
   useLayoutEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
 
-    scrollToTop();
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 
     const onPageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        scrollToTop();
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
       }
     };
 

@@ -4,6 +4,7 @@
 
 .projects-pin-target--pinned {
   background: var(--background);
+  will-change: opacity, transform;
 }
 
 .projects-pin-spacer {

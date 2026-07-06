@@ -341,7 +341,7 @@ const AwardTrophy = ({
             position: decorative ? [0, 0, 10] : [0, 1.2, 6.5],
             fov: 32,
           }}
-          dpr={[1, 2]}
+          dpr={[1, 1.5]}
           gl={{ alpha: true, antialias: true }}
           onCreated={({ gl }) => {
             gl.toneMappingExposure = 1.35;
