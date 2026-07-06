@@ -15,6 +15,7 @@ type AwardsScrollProps = {
 
 const LINE_LERP = 0.1;
 const TROPHY_APPEAR_LERP = 0.09;
+const SHADE_APPEAR_LERP = 0.065;
 const TROPHY_APPEAR_SCROLL_SPAN = 0.2;
 const CONTENT_VISIBLE_THRESHOLD = 0.92;
 
@@ -56,6 +57,8 @@ const AwardsScroll = ({
   const scrollYAtActiveRef = useRef(0);
   const scrollYAtActiveSetRef = useRef(false);
   const trophyAppearRef = useRef(0);
+  const shadeAppearRef = useRef(0);
+  const shadeRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<number[]>(awards.map(() => 0));
   const currentRef = useRef<number[]>(awards.map(() => 0));
   const rafRef = useRef<number | null>(null);
@@ -127,6 +130,11 @@ const AwardsScroll = ({
       setContentVisible(false);
       animationProgressRef.current = 0;
       scrollProgressRef.current = 0;
+      trophyAppearRef.current = 0;
+      shadeAppearRef.current = 0;
+      if (shadeRef.current) {
+        shadeRef.current.style.opacity = "0";
+      }
     };
 
     const updateTargets = () => {
@@ -186,6 +194,14 @@ const AwardsScroll = ({
         );
         trophyAppearRef.current +=
           (trophyTarget - trophyAppearRef.current) * TROPHY_APPEAR_LERP;
+
+        shadeAppearRef.current +=
+          (trophyAppearRef.current - shadeAppearRef.current) * SHADE_APPEAR_LERP;
+
+        if (shadeRef.current) {
+          shadeRef.current.style.opacity = String(shadeAppearRef.current);
+        }
+
         setIntroActive(animationProgressRef.current > 0.04);
       } else {
         setIntroActive(animationProgressRef.current > 0.02);
@@ -217,6 +233,10 @@ const AwardsScroll = ({
       scrollYAtActiveRef.current = 0;
       scrollYAtActiveSetRef.current = false;
       trophyAppearRef.current = 0;
+      shadeAppearRef.current = 0;
+      if (shadeRef.current) {
+        shadeRef.current.style.opacity = "0";
+      }
     }
   }, [scrollActive]);
 
@@ -240,7 +260,16 @@ const AwardsScroll = ({
           />
         </div>
 
-        <div className="awards__content-shade" aria-hidden />
+        <div
+          ref={shadeRef}
+          className={[
+            "awards__content-shade",
+            onCurtains ? "awards__content-shade--scroll-driven" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-hidden
+        />
 
         <div className="container awards__stage">
           <div className="awards__layout">

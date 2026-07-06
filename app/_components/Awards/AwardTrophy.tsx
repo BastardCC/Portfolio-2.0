@@ -31,6 +31,7 @@ const TROPHY_DECORATIVE_TARGET_SIZE = 5;
 const TROPHY_BASE_TILT_X = 0.38;
 const TROPHY_BASE_TILT_Z = -0.22;
 const TROPHY_APPEAR_DURATION = 1.4;
+const TROPHY_ROTATION_LERP = 0.08;
 
 const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
 
@@ -85,6 +86,7 @@ const TrophyModel = ({
 }: TrophyModelProps) => {
   const groupRef = useRef<Group>(null);
   const appearRef = useRef(0);
+  const rotationYRef = useRef(0);
   const { scene } = useGLTF(TROPHY_URL);
   const model = useMemo(() => {
     const cloned = scene.clone(true);
@@ -113,6 +115,22 @@ const TrophyModel = ({
     }
   }, [hasAppeared, appearProgressRef]);
 
+  const applyRotation = () => {
+    if (!groupRef.current) return;
+
+    const targetRotationY =
+      scrollProgressRef.current * Math.PI * 2 * TROPHY_ROTATION_TURNS +
+      dragRotationRef.current.y;
+
+    rotationYRef.current +=
+      (targetRotationY - rotationYRef.current) * TROPHY_ROTATION_LERP;
+
+    groupRef.current.rotation.x =
+      (decorative ? TROPHY_BASE_TILT_X : 0) + dragRotationRef.current.x;
+    groupRef.current.rotation.y = rotationYRef.current;
+    groupRef.current.rotation.z = decorative ? TROPHY_BASE_TILT_Z : 0;
+  };
+
   useFrame((_, delta) => {
     if (!groupRef.current) return;
 
@@ -122,12 +140,7 @@ const TrophyModel = ({
       const appearEase = easeOutCubic(scrollAppear);
       const appearScale = 0.84 + appearEase * 0.16;
 
-      groupRef.current.rotation.x =
-        TROPHY_BASE_TILT_X + dragRotationRef.current.x;
-      groupRef.current.rotation.y =
-        scrollProgressRef.current * Math.PI * 2 * TROPHY_ROTATION_TURNS +
-        dragRotationRef.current.y;
-      groupRef.current.rotation.z = TROPHY_BASE_TILT_Z;
+      applyRotation();
       groupRef.current.scale.setScalar(appearScale);
       return;
     }
@@ -149,12 +162,7 @@ const TrophyModel = ({
       ? 0.84 + appearEase * 0.16
       : 0.72 + appearEase * 0.28;
 
-    groupRef.current.rotation.x =
-      (decorative ? TROPHY_BASE_TILT_X : 0) + dragRotationRef.current.x;
-    groupRef.current.rotation.y =
-      scrollProgressRef.current * Math.PI * 2 * TROPHY_ROTATION_TURNS +
-      dragRotationRef.current.y;
-    groupRef.current.rotation.z = decorative ? TROPHY_BASE_TILT_Z : 0;
+    applyRotation();
     groupRef.current.scale.setScalar(appearScale);
   });
 

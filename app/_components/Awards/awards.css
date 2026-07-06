@@ -29,7 +29,12 @@
 }
 
 .awards__scroll-zone--on-curtains .awards__content-shade {
+  background: rgb(0 0 0 / 0.42);
+}
+
+.awards__content-shade--scroll-driven {
   opacity: 0;
+  transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -87,6 +92,13 @@
   z-index: 1;
   pointer-events: none;
   background: rgb(0 0 0 / 0.38);
+  transition: opacity 0.55s var(--awards-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .awards__content-shade {
+    transition: none;
+  }
 }
 
 .awards__panel--intro,
