@@ -60,13 +60,14 @@ const AwardsScroll = ({
   const trophyAppearRef = useRef(0);
   const shadeAppearRef = useRef(0);
   const shadeRef = useRef<HTMLDivElement>(null);
-  const targetRef = useRef<number[]>(awards.map(() => 0));
-  const currentRef = useRef<number[]>(awards.map(() => 0));
+  const lineCount = awards.length + 1;
+  const targetRef = useRef<number[]>(new Array(lineCount).fill(0));
+  const currentRef = useRef<number[]>(new Array(lineCount).fill(0));
   const rafRef = useRef<number | null>(null);
   const visualEmitRef = useRef(0);
 
   const [lineProgress, setLineProgress] = useState<number[]>(() =>
-    awards.map(() => 0),
+    new Array(lineCount).fill(0),
   );
   const [contentVisible, setContentVisible] = useState(false);
   const [introActive, setIntroActive] = useState(false);
@@ -126,9 +127,9 @@ const AwardsScroll = ({
 
       scrollYAtActiveRef.current = getScrollY();
       scrollYAtActiveSetRef.current = true;
-      targetRef.current = awards.map(() => 0);
-      currentRef.current = awards.map(() => 0);
-      setLineProgress(awards.map(() => 0));
+      targetRef.current = new Array(lineCount).fill(0);
+      currentRef.current = new Array(lineCount).fill(0);
+      setLineProgress(new Array(lineCount).fill(0));
       setContentVisible(false);
       animationProgressRef.current = 0;
       scrollProgressRef.current = 0;
@@ -153,14 +154,14 @@ const AwardsScroll = ({
         if (rect.top < window.innerHeight) {
           scrollProgressRef.current = 1;
           animationProgressRef.current = 1;
-          targetRef.current = awards.map(() => 1);
+          targetRef.current = new Array(lineCount).fill(1);
           setContentVisible(true);
         }
         return;
       }
 
-      targetRef.current = awards.map((_, index) =>
-        getLineTarget(animationProgress, index, awards.length),
+      targetRef.current = Array.from({ length: lineCount }, (_, index) =>
+        getLineTarget(animationProgress, index, lineCount),
       );
     };
 
@@ -170,8 +171,8 @@ const AwardsScroll = ({
       ).matches;
 
       if (reducedMotion) {
-        currentRef.current = awards.map(() => 1);
-        setLineProgress(awards.map(() => 1));
+        currentRef.current = new Array(lineCount).fill(1);
+        setLineProgress(new Array(lineCount).fill(1));
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
@@ -179,7 +180,7 @@ const AwardsScroll = ({
       const current = currentRef.current;
       const target = targetRef.current;
 
-      for (let index = 0; index < awards.length; index += 1) {
+      for (let index = 0; index < lineCount; index += 1) {
         current[index] += (target[index] - current[index]) * LINE_LERP;
       }
 

@@ -32,8 +32,16 @@ const AwardList = ({
         .join(" ")}
       style={{ "--award-count": awards.length } as CSSProperties}
     >
+      <div
+        className="awards-item__line awards-list__lead-line"
+        aria-hidden
+        style={{
+          transform: `scaleX(${lineProgress[0] ?? 0})`,
+          opacity: (lineProgress[0] ?? 0) > 0.001 ? 1 : 0,
+        }}
+      />
       {awards.map((award, index) => {
-        const progress = lineProgress[index] ?? 0;
+        const progress = lineProgress[index + 1] ?? 0;
 
         return (
           <AwardItem
