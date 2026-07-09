@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { getScrollY, shouldEmitVisualFrame, subscribeScrollFrame } from "../scroll-frame";
+import { ServicesContactTransition } from "../ServicesContactTransition";
 import { SERVICES, SERVICES_DESCRIPTION } from "./services-data";
 import "./services.css";
 
@@ -134,87 +135,95 @@ const Services = () => {
   );
 
   return (
-    <div className="services" ref={sectionRef}>
-      <div className="container services__inner">
-        <div className="services__accordion">
-          {SERVICES.map((category, index) => {
-            const isOpen = openId === category.id;
+    <>
+      <div className="services-pin-target">
+        <div className="services" ref={sectionRef}>
+          <div className="container services__inner">
+            <div className="services__accordion">
+              {SERVICES.map((category, index) => {
+                const isOpen = openId === category.id;
 
-            return (
-              <div
-                key={category.id}
-                className={[
-                  "services__item",
-                  isOpen ? "services__item--open" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                {renderLine(index)}
-                <button
-                  type="button"
-                  className="services__header"
-                  onClick={() => toggle(category.id)}
-                  aria-expanded={isOpen}
-                  aria-controls={`services-panel-${category.id}`}
-                >
-                  <span className="services__label">{category.label}</span>
-                  <span className="services__icon" aria-hidden>
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                return (
+                  <div
+                    key={category.id}
+                    className={[
+                      "services__item",
+                      isOpen ? "services__item--open" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {renderLine(index)}
+                    <button
+                      type="button"
+                      className="services__header"
+                      onClick={() => toggle(category.id)}
+                      aria-expanded={isOpen}
+                      aria-controls={`services-panel-${category.id}`}
                     >
-                      <path
-                        d="M10 3.5v13M4.5 11l5.5 5.5L15.5 11"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </button>
+                      <span className="services__label">{category.label}</span>
+                      <span className="services__icon" aria-hidden>
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 20 20"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M10 3.5v13M4.5 11l5.5 5.5L15.5 11"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
 
-                <div
-                  id={`services-panel-${category.id}`}
-                  className="services__panel"
-                  role="region"
-                  aria-hidden={!isOpen}
-                >
-                  <div className="services__panel-inner">
-                    <div className="services__groups">
-                      {category.groups.map((group) => (
-                        <div key={group.title} className="services__group">
-                          <h4 className="services__group-title">
-                            {group.title}
-                          </h4>
-                          <ul className="services__list">
-                            {group.items.map((item) => (
-                              <li key={item} className="services__list-item">
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
+                    <div
+                      id={`services-panel-${category.id}`}
+                      className="services__panel"
+                      role="region"
+                      aria-hidden={!isOpen}
+                    >
+                      <div className="services__panel-inner">
+                        <div className="services__groups">
+                          {category.groups.map((group) => (
+                            <div key={group.title} className="services__group">
+                              <h4 className="services__group-title">
+                                {group.title}
+                              </h4>
+                              <ul className="services__list">
+                                {group.items.map((item) => (
+                                  <li key={item} className="services__list-item">
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-          {renderLine(SERVICES.length)}
-        </div>
+                );
+              })}
+              {renderLine(SERVICES.length)}
+            </div>
 
-        <aside className="services__intro">
-          <h2 className="services__title">Services</h2>
-          <p className="services__description">{SERVICES_DESCRIPTION}</p>
-        </aside>
+            <aside className="services__intro">
+              <h2 className="services__title">Services</h2>
+              <p className="services__description">{SERVICES_DESCRIPTION}</p>
+            </aside>
+          </div>
+
+          <div className="services__transition-anchor" aria-hidden />
+        </div>
       </div>
-    </div>
+
+      <ServicesContactTransition />
+    </>
   );
 };
 

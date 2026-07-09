@@ -1,9 +1,34 @@
 .services {
+  position: relative;
   --services-line: rgb(255 255 255 / 0.16);
   --services-muted: rgb(255 255 255 / 0.55);
   --services-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --services-reveal: 0;
   padding-block: clamp(4rem, 10vh, 8rem);
+}
+
+.services-pin-target {
+  background: #0a0909;
+  color: var(--background);
+}
+
+.services-pin-target--pinned {
+  background: #0a0909;
+  will-change: opacity, transform;
+}
+
+.services-pin-spacer {
+  width: 100%;
+  pointer-events: none;
+}
+
+.services__transition-anchor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
 }
 
 .services__inner {

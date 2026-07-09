@@ -1,0 +1,11 @@
+.contact {
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  padding-block: clamp(4rem, 10vh, 8rem);
+}
+
+.contact__title {
+  font-size: clamp(2.75rem, 4vw + 1rem, 4.5rem);
+  line-height: 1;
+}

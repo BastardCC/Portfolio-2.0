@@ -1,0 +1,36 @@
+.services-contact-transition-zone {
+  --contact-buffer: 70dvh;
+  --contact-runway: 100dvh;
+  height: calc(
+    var(--contact-buffer) + var(--curtain-scroll) + var(--contact-runway)
+  );
+}
+
+.transition-contact-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.transition-contact-overlay--visible {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.transition-contact-overlay .contact {
+  height: 100%;
+  min-height: 100dvh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .services-contact-transition-zone {
+    display: none;
+  }
+
+  .transition-contact-overlay {
+    transition: none;
+  }
+}

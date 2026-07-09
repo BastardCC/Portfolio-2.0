@@ -58,19 +58,24 @@
   transition: transform 1.8s var(--transition-ease);
 }
 
+.transition-curtain--light {
+  background: var(--background);
+}
+
 /* Awards au-dessus des rideaux — chevauche le viewport sticky et remplit la zone */
 .transition-awards-flow {
   position: relative;
   z-index: 2;
   margin-top: -100dvh;
   height: 100%;
-  visibility: hidden;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.55s var(--transition-ease);
 }
 
 .transition-awards-flow--visible {
-  visibility: visible;
   pointer-events: auto;
+  opacity: 1;
 }
 
 .transition-awards-flow .awards,
@@ -81,5 +86,9 @@
 @media (prefers-reduced-motion: reduce) {
   .transition-zone {
     display: none;
+  }
+
+  .transition-awards-flow {
+    transition: none;
   }
 }

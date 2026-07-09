@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import AwardsScroll from "../Awards/AwardsScroll";
-import { AWARDS, AWARDS_DESCRIPTION } from "../Awards/awards-data";
-import { useSetTransitionReady } from "./TransitionProvider";
-import TransitionCurtains from "./TransitionCurtains";
+import { useEffect, useRef, useState } from "react";
+import Contact from "../Contact";
+import TransitionCurtains from "../ProjectsAwardsTransition/TransitionCurtains";
 import {
   APPEAR_SCROLL_VIEWPORTS,
   CURTAIN_COUNT,
   areCurtainsComplete,
   getCurtainAppear,
-} from "./transition-math";
+} from "../ProjectsAwardsTransition/transition-math";
 import { getScrollY, subscribeScrollFrame } from "../scroll-frame";
-import "./projects-awards-transition.css";
+import "../ProjectsAwardsTransition/projects-awards-transition.css";
+import "./services-contact-transition.css";
 
-const PIN_TARGET_SELECTOR = ".projects-pin-target";
-const ANCHOR_SELECTOR = ".projects-grid__transition-anchor";
-const PIN_SPACER_CLASS = "projects-pin-spacer";
+const PIN_TARGET_SELECTOR = ".services-pin-target";
+const ANCHOR_SELECTOR = ".services__transition-anchor";
+const PIN_SPACER_CLASS = "services-pin-spacer";
+const CURTAIN_START_BUFFER_VIEWPORTS = 0.7;
 
 type PinSnapshot = {
   startScroll: number;
@@ -26,17 +26,15 @@ type PinSnapshot = {
   height: number;
 };
 
-const ProjectsAwardsTransition = () => {
+const ServicesContactTransition = () => {
   const zoneRef = useRef<HTMLDivElement>(null);
   const pinSnapshotRef = useRef<PinSnapshot | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const setTransitionReady = useSetTransitionReady();
   const [progress, setProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
-  const [awardsEngaged, setAwardsEngaged] = useState(false);
+  const [contactEngaged, setContactEngaged] = useState(false);
 
-  const awardsReady = areCurtainsComplete(progress);
   const appears = Array.from({ length: CURTAIN_COUNT }, (_, bottomIndex) =>
     getCurtainAppear(progress, bottomIndex),
   );
@@ -56,7 +54,7 @@ const ProjectsAwardsTransition = () => {
     const releasePin = (pinTarget: HTMLElement | null) => {
       pinSnapshotRef.current = null;
       setIsActive(false);
-      setAwardsEngaged(false);
+      setContactEngaged(false);
 
       if (spacerRef.current) {
         spacerRef.current.remove();
@@ -67,7 +65,7 @@ const ProjectsAwardsTransition = () => {
 
       clearPinStyles(pinTarget);
       pinTarget.style.opacity = "";
-      pinTarget.classList.remove("projects-pin-target--pinned");
+      pinTarget.classList.remove("services-pin-target--pinned");
     };
 
     const engagePin = (pinTarget: HTMLElement, scrollY: number) => {
@@ -93,7 +91,7 @@ const ProjectsAwardsTransition = () => {
       pinTarget.style.left = `${rect.left}px`;
       pinTarget.style.width = `${rect.width}px`;
       pinTarget.style.zIndex = "10";
-      pinTarget.classList.add("projects-pin-target--pinned");
+      pinTarget.classList.add("services-pin-target--pinned");
       setIsActive(true);
     };
 
@@ -104,6 +102,7 @@ const ProjectsAwardsTransition = () => {
       const anchor = document.querySelector<HTMLElement>(ANCHOR_SELECTOR);
       const anchorBottom = anchor?.getBoundingClientRect().bottom ?? Infinity;
       const appearScrollDistance = viewportHeight * APPEAR_SCROLL_VIEWPORTS;
+      const bufferPx = viewportHeight * CURTAIN_START_BUFFER_VIEWPORTS;
 
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
@@ -114,7 +113,7 @@ const ProjectsAwardsTransition = () => {
         const rect = zone.getBoundingClientRect();
         const ready = rect.bottom > 0 && rect.top < viewportHeight;
         setProgress(0);
-        setTransitionReady(ready);
+        setContactEngaged(ready);
         return;
       }
 
@@ -123,14 +122,12 @@ const ProjectsAwardsTransition = () => {
       if (snapshot && scrollY < snapshot.startScroll - 1) {
         releasePin(pinTarget);
         setProgress(0);
-        setTransitionReady(false);
         return;
       }
 
       if (!snapshot && anchorBottom > viewportHeight + 0.5) {
         releasePin(pinTarget);
         setProgress(0);
-        setTransitionReady(false);
         return;
       }
 
@@ -144,19 +141,17 @@ const ProjectsAwardsTransition = () => {
       if (!activeSnapshot) return;
 
       const scrolled = Math.max(0, scrollY - activeSnapshot.startScroll);
-      const curtainProgress = Math.min(scrolled / appearScrollDistance, 1);
+      const effectiveScrolled = Math.max(0, scrolled - bufferPx);
+      const curtainProgress = Math.min(effectiveScrolled / appearScrollDistance, 1);
       const ready = areCurtainsComplete(curtainProgress);
-      const projectsFade = Math.max(
+      const servicesFade = Math.max(
         0,
         Math.min(1, (curtainProgress - 0.55) / 0.35),
       );
 
-      pinTarget.style.opacity = String(Math.max(0, 1 - projectsFade));
-
-      setAwardsEngaged(ready);
-
+      pinTarget.style.opacity = String(Math.max(0, 1 - servicesFade));
+      setContactEngaged(ready);
       setProgress(curtainProgress);
-      setTransitionReady(ready);
     };
 
     const scheduleUpdate = () => {
@@ -182,42 +177,36 @@ const ProjectsAwardsTransition = () => {
 
       releasePin(document.querySelector<HTMLElement>(PIN_TARGET_SELECTOR));
     };
-  }, [setTransitionReady]);
+  }, []);
 
   return (
     <div
       ref={zoneRef}
       className={[
         "transition-zone",
+        "services-contact-transition-zone",
         isActive ? "transition-zone--active" : "",
       ]
         .filter(Boolean)
         .join(" ")}
-      style={{ "--award-count": AWARDS.length } as CSSProperties}
     >
       <div className="transition-sticky">
-        <TransitionCurtains appears={appears} />
-      </div>
-
-      <div
-        className={[
-          "transition-awards-flow",
-          awardsEngaged ? "transition-awards-flow--visible" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        <section className="awards awards--on-curtains text-white">
-          <AwardsScroll
-            awards={AWARDS}
-            description={AWARDS_DESCRIPTION}
-            onCurtains
-            scrollActive={awardsEngaged}
-          />
-        </section>
+        <TransitionCurtains appears={appears} variant="light" />
+        <div
+          className={[
+            "transition-contact-overlay",
+            contactEngaged ? "transition-contact-overlay--visible" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          <section className="contact contact--on-curtains">
+            <Contact />
+          </section>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ProjectsAwardsTransition;
+export default ServicesContactTransition;
