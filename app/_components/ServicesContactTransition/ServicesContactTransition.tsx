@@ -18,6 +18,22 @@ const ANCHOR_SELECTOR = ".services__transition-anchor";
 const PIN_SPACER_CLASS = "services-pin-spacer";
 const CURTAIN_START_BUFFER_VIEWPORTS = 0.7;
 
+const easeOutQuad = (value: number) => 1 - (1 - value) ** 2;
+
+const getPinnedTop = (
+  viewportHeight: number,
+  contentHeight: number,
+  engageTop: number,
+  bufferProgress: number,
+) => {
+  const centeredTop =
+    contentHeight <= viewportHeight
+      ? (viewportHeight - contentHeight) / 2
+      : Math.min(0, viewportHeight - contentHeight);
+
+  return engageTop + (centeredTop - engageTop) * easeOutQuad(bufferProgress);
+};
+
 type PinSnapshot = {
   startScroll: number;
   top: number;
@@ -48,6 +64,7 @@ const ServicesContactTransition = () => {
       pinTarget.style.top = "";
       pinTarget.style.left = "";
       pinTarget.style.width = "";
+      pinTarget.style.height = "";
       pinTarget.style.zIndex = "";
     };
 
@@ -141,6 +158,17 @@ const ServicesContactTransition = () => {
       if (!activeSnapshot) return;
 
       const scrolled = Math.max(0, scrollY - activeSnapshot.startScroll);
+      const bufferProgress =
+        bufferPx > 0 ? Math.min(scrolled / bufferPx, 1) : 1;
+      const pinnedTop = getPinnedTop(
+        viewportHeight,
+        activeSnapshot.height,
+        activeSnapshot.top,
+        bufferProgress,
+      );
+
+      pinTarget.style.top = `${pinnedTop}px`;
+
       const effectiveScrolled = Math.max(0, scrolled - bufferPx);
       const curtainProgress = Math.min(effectiveScrolled / appearScrollDistance, 1);
       const ready = areCurtainsComplete(curtainProgress);

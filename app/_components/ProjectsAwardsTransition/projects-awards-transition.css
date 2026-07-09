@@ -4,7 +4,6 @@
   --curtain-scroll: 385vh;
   --transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --curtain-seam: 2px;
-  /* Scroll awards uniquement (lignes + marge), sans le viewport déjà couvert par le sticky */
   --awards-runway: calc(
     var(--award-count, 4) * 50dvh + 85dvh
   );
@@ -12,15 +11,9 @@
   position: relative;
   z-index: 25;
   margin-top: calc(-1 * var(--transition-overlap));
-  /* Rideaux puis awards, sans double-compter le viewport sticky */
   height: calc(var(--curtain-scroll) + var(--awards-runway));
   background: transparent;
   pointer-events: none;
-}
-
-/* Invisible tant que l'ancre bas de grille n'a pas déclenché le pin */
-.transition-zone:not(.transition-zone--active) .transition-sticky {
-  visibility: hidden;
 }
 
 .transition-sticky {
@@ -29,6 +22,13 @@
   height: 100dvh;
   overflow: hidden;
   isolation: isolate;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.55s var(--transition-ease);
+}
+
+.transition-zone--active .transition-sticky {
+  opacity: 1;
 }
 
 .transition-curtains {
@@ -62,7 +62,6 @@
   background: var(--background);
 }
 
-/* Awards au-dessus des rideaux — chevauche le viewport sticky et remplit la zone */
 .transition-awards-flow {
   position: relative;
   z-index: 2;
@@ -70,12 +69,14 @@
   height: 100%;
   pointer-events: none;
   opacity: 0;
+  visibility: hidden;
   transition: opacity 0.55s var(--transition-ease);
 }
 
 .transition-awards-flow--visible {
   pointer-events: auto;
   opacity: 1;
+  visibility: visible;
 }
 
 .transition-awards-flow .awards,
@@ -88,6 +89,7 @@
     display: none;
   }
 
+  .transition-sticky,
   .transition-awards-flow {
     transition: none;
   }

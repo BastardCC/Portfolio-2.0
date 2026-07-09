@@ -106,8 +106,6 @@ const AwardsScroll = ({
           scrolledSinceActive / animationScrollable,
           1,
         );
-        // Rotation continue : non plafonnée pour que le trophée continue
-        // de tourner tant qu'il reste du scroll après l'apparition des items.
         const scrollProgress =
           scrolledSinceActive / Math.max(animationScrollable + tailPx, 1);
 

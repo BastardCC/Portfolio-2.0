@@ -36,7 +36,6 @@ const ProjectsAwardsTransition = () => {
   const [isActive, setIsActive] = useState(false);
   const [awardsEngaged, setAwardsEngaged] = useState(false);
 
-  const awardsReady = areCurtainsComplete(progress);
   const appears = Array.from({ length: CURTAIN_COUNT }, (_, bottomIndex) =>
     getCurtainAppear(progress, bottomIndex),
   );
