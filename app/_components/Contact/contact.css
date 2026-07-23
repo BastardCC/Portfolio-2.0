@@ -1,11 +1,224 @@
 .contact {
+  --contact-muted: rgb(18 15 15 / 0.55);
+  --contact-line: rgb(18 15 15 / 0.18);
+  --contact-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  display: flex;
+  align-items: center;
   min-height: 100dvh;
   background: var(--background);
   color: var(--foreground);
-  padding-block: clamp(4rem, 10vh, 8rem);
+  padding-block: clamp(2.5rem, 6vh, 5rem);
+}
+
+.contact__inner {
+  width: 100%;
+}
+
+.contact__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vh, 3rem);
+  align-items: start;
+}
+
+.contact__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.contact__intro-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 100%;
+}
+
+.contact__copyright {
+  margin: 0;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--contact-muted);
+  line-height: 1.2;
+}
+
+.contact__eyebrow {
+  margin: 0;
+  font-size: clamp(0.65rem, 0.15vw + 0.6rem, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--contact-muted);
+  line-height: 1.2;
 }
 
 .contact__title {
-  font-size: clamp(2.75rem, 4vw + 1rem, 4.5rem);
-  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08em;
+  font-size: clamp(2.25rem, 5vw + 0.5rem, 3rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.contact__title-line {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.contact__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.contact__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.contact__detail-label {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--contact-muted);
+  line-height: 1.1;
+}
+
+.contact__detail-value {
+  margin: 0;
+  color: inherit;
+  text-decoration: none;
+  font-size: clamp(0.875rem, 0.2vw + 0.8rem, 0.95rem);
+  line-height: 1.3;
+  transition: opacity 0.3s var(--contact-ease);
+  word-break: break-word;
+}
+
+.contact__detail-value:hover,
+.contact__detail-value:focus-visible {
+  opacity: 0.65;
+}
+
+.contact__socials {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--contact-line);
+}
+
+.contact__social {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.95rem;
+  border-bottom: 1px solid var(--contact-line);
+  color: inherit;
+  text-decoration: none;
+  font-size: clamp(0.875rem, 0.2vw + 0.8rem, 0.95rem);
+  transition: opacity 0.3s var(--contact-ease);
+}
+
+.contact__social:hover,
+.contact__social:focus-visible {
+  opacity: 0.65;
+}
+
+.contact__social-icon {
+  flex-shrink: 0;
+  transition: transform 0.35s var(--contact-ease);
+}
+
+.contact__social:hover .contact__social-icon,
+.contact__social:focus-visible .contact__social-icon {
+  transform: translate(2px, -2px);
+}
+
+/* Laptop : 3 colonnes compactes */
+@media (width >= 64rem) and (width < 90rem) {
+  .contact {
+    padding-block: clamp(2rem, 5vh, 3.5rem);
+  }
+
+  .contact__grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 0.8fr);
+    gap: clamp(1.25rem, 2.5vw, 2rem);
+    align-items: start;
+    min-height: min(58dvh, 24rem);
+  }
+
+  .contact__intro {
+    align-self: start;
+    min-height: auto;
+    gap: 0;
+  }
+
+  .contact__intro-main {
+    max-width: 100%;
+  }
+
+  .contact__title {
+    font-size: clamp(2.1rem, 2.6vw + 0.65rem, 2.75rem);
+    line-height: 1.1;
+  }
+
+  .contact__details {
+    gap: 0.85rem;
+    padding-block: 0;
+  }
+
+  .contact__social {
+    padding-block: 0.85rem;
+  }
+}
+
+/* Grand écran : proportions maquette */
+@media (width >= 90rem) {
+  .contact__grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
+    gap: clamp(2rem, 4vw, 4.5rem);
+    align-items: start;
+    min-height: min(68dvh, 34rem);
+  }
+
+  .contact__intro {
+    align-self: start;
+    min-height: auto;
+  }
+
+  .contact__intro-main {
+    max-width: 100%;
+  }
+
+  .contact__title {
+    font-size: clamp(2.75rem, 3.2vw + 0.5rem, 3.85rem);
+  }
+
+  .contact__details {
+    gap: 1rem;
+  }
+
+  .contact__social {
+    padding-block: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact__detail-value,
+  .contact__social,
+  .contact__social-icon {
+    transition: none;
+  }
+
+  .contact__social:hover .contact__social-icon,
+  .contact__social:focus-visible .contact__social-icon {
+    transform: none;
+  }
 }

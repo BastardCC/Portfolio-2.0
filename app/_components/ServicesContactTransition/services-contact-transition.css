@@ -29,7 +29,7 @@
   top: 0;
   min-height: 100dvh;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   background: var(--background);
   color: var(--foreground);
   opacity: var(--contact-reveal-opacity, 0);
@@ -44,7 +44,7 @@
 .transition-contact-panel .contact {
   width: 100%;
   min-height: 100dvh;
-  padding-block: clamp(4rem, 10vh, 8rem);
+  padding-block: clamp(3rem, 8vh, 6rem);
   background: transparent;
 }
 
