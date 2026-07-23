@@ -1,33 +1,50 @@
 .services-contact-transition-zone {
   --contact-buffer: 70dvh;
-  --contact-runway: 100dvh;
+  --contact-runway: 170dvh;
+  /* Contact entre dans le flux vers ~55 % de la course des rideaux */
+  --contact-start: calc(
+    var(--contact-buffer) + var(--curtain-scroll) * 0.55
+  );
   height: calc(
     var(--contact-buffer) + var(--curtain-scroll) + var(--contact-runway)
   );
 }
 
-.transition-contact-overlay {
-  position: absolute;
-  inset: 0;
+.transition-contact-flow {
+  position: relative;
   z-index: 2;
+  margin-top: -100dvh;
+  padding-top: var(--contact-start);
+  height: calc(100% + 100dvh);
   pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.transition-contact-overlay--visible {
+.transition-contact-flow--active {
   pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
 }
 
-.transition-contact-overlay .contact {
-  display: flex;
-  align-items: center;
-  height: 100%;
+.transition-contact-panel {
+  position: sticky;
+  top: 0;
   min-height: 100dvh;
-  padding-block: 0;
+  display: flex;
+  align-items: flex-start;
+  background: var(--background);
+  color: var(--foreground);
+  opacity: var(--contact-reveal-opacity, 0);
+  transform: translate3d(
+    0,
+    calc((1 - var(--contact-reveal-y, 0)) * 4rem),
+    0
+  );
+  will-change: opacity, transform;
+}
+
+.transition-contact-panel .contact {
+  width: 100%;
+  min-height: 100dvh;
+  padding-block: clamp(4rem, 10vh, 8rem);
+  background: transparent;
 }
 
 .contact--on-curtains .contact__inner {
@@ -39,7 +56,8 @@
     display: none;
   }
 
-  .transition-contact-overlay {
-    transition: none;
+  .transition-contact-panel {
+    opacity: 1;
+    transform: none;
   }
 }

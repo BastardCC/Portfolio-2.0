@@ -1,11 +1,11 @@
 .transition-zone {
   --transition-overlap: 100vh;
   --transition-overlap: 100dvh;
-  --curtain-scroll: 385vh;
+  --curtain-scroll: 550vh;
   --transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --curtain-seam: 2px;
   --awards-runway: calc(
-    var(--award-count, 4) * 50dvh + 85dvh
+    var(--award-count, 4) * 70dvh + 100dvh
   );
 
   position: relative;

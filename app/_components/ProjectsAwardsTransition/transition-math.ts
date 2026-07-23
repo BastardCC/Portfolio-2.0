@@ -5,9 +5,9 @@ export const CURTAIN_DURATION = 0.42;
 export const CURTAIN_APPEAR_ZONE = 0.4;
 /**
  * Distance de scroll (en × viewport) pour progress 0→1.
- * Avec CURTAIN_APPEAR_ZONE, la séquence se termine vers 42 % de cette distance (~1,6 viewport).
+ * Plus c’est haut, plus les rideaux (Awards + Services) sont lents.
  */
-export const APPEAR_SCROLL_VIEWPORTS = 3.85;
+export const APPEAR_SCROLL_VIEWPORTS = 5.5;
 
 const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
 

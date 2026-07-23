@@ -1,7 +1,7 @@
 .awards {
   --awards-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --awards-scroll-step: 50vh;
-  --awards-scroll-tail: 85vh;
+  --awards-scroll-step: 70vh;
+  --awards-scroll-tail: 100vh;
   --awards-content-duration: 1.2s;
   --awards-content-stagger: 0.2s;
   position: relative;
