@@ -20,7 +20,7 @@ const CURTAIN_START_BUFFER_VIEWPORTS = 1.5;
 const CONTACT_REVEAL_START_VIEWPORTS = 1.45;
 /** Fin du reveal : un peu après le sticky en haut */
 const CONTACT_REVEAL_END_VIEWPORTS = -0.75;
-const CONTACT_REVEAL_LERP = 0.035;
+const CONTACT_REVEAL_LERP = 0.08;
 
 const easeOutQuad = (value: number) => 1 - (1 - value) ** 2;
 const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
@@ -306,9 +306,11 @@ const ServicesContactTransition = () => {
           .join(" ")}
       >
         <div ref={contactPanelRef} className="transition-contact-panel">
-          <section className="contact contact--on-curtains">
-            <Contact />
-          </section>
+          <div className="transition-contact-panel__reveal">
+            <section className="contact contact--on-curtains">
+              <Contact />
+            </section>
+          </div>
         </div>
       </div>
     </div>
