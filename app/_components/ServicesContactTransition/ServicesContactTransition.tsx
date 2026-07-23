@@ -15,7 +15,7 @@ import "./services-contact-transition.css";
 const PIN_TARGET_SELECTOR = ".services-pin-target";
 const ANCHOR_SELECTOR = ".services__transition-anchor";
 const PIN_SPACER_CLASS = "services-pin-spacer";
-const CURTAIN_START_BUFFER_VIEWPORTS = 0.7;
+const CURTAIN_START_BUFFER_VIEWPORTS = 1.5;
 /** Début du reveal : panel encore sous le viewport */
 const CONTACT_REVEAL_START_VIEWPORTS = 1.45;
 /** Fin du reveal : un peu après le sticky en haut */
