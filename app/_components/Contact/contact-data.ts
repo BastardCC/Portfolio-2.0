@@ -2,6 +2,7 @@ export const CONTACT = {
   eyebrow: "Let's build work that inspires.",
   titleLines: ["Ready to build", "something cool ?"],
   copyright: "© Aina Nirina® 2026",
+  statement: "Less is better",
   email: {
     label: "Email",
     value: "ainanirinarak@gmail.com",

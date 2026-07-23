@@ -1,18 +1,29 @@
 .contact {
   --contact-muted: rgb(18 15 15 / 0.55);
-  --contact-line: rgb(18 15 15 / 0.18);
+  --contact-line: rgb(18 15 15 / 0.22);
   --contact-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   display: flex;
-  align-items: center;
+  align-items: stretch;
   min-height: 100dvh;
   background: var(--background);
   color: var(--foreground);
-  padding-block: clamp(2.5rem, 6vh, 5rem);
+  padding-block: 0;
 }
 
 .contact__inner {
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  min-height: 100dvh;
+}
+
+.contact__top {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  width: 100%;
+  padding-block: clamp(2rem, 5vh, 4rem) clamp(1.25rem, 3vh, 2rem);
 }
 
 .contact__grid {
@@ -20,6 +31,7 @@
   grid-template-columns: 1fr;
   gap: clamp(2rem, 5vh, 3rem);
   align-items: start;
+  width: 100%;
 }
 
 .contact__intro {
@@ -141,17 +153,49 @@
   transform: translate(2px, -2px);
 }
 
+.contact__bottom {
+  width: 100vw;
+  max-width: 100vw;
+  margin-top: auto;
+  margin-left: calc(50% - 50vw);
+  padding-inline: clamp(0.5rem, 1.5vw, 1rem);
+  box-sizing: border-box;
+  line-height: 0;
+}
+
+.contact__statement {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: clamp(3.5rem, 9vh, 6.5rem) 0 0;
+  border-top: 1px solid var(--foreground);
+  line-height: 0;
+  font-size: 0;
+  color: var(--foreground);
+}
+
+.contact__statement-mark {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+  user-select: none;
+  pointer-events: none;
+}
+
 /* Laptop : 3 colonnes compactes */
 @media (width >= 64rem) and (width < 90rem) {
-  .contact {
-    padding-block: clamp(2rem, 5vh, 3.5rem);
+  .contact__top {
+    padding-block: clamp(1.75rem, 4vh, 3rem) clamp(1rem, 2.5vh, 1.75rem);
   }
 
   .contact__grid {
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 0.8fr);
     gap: clamp(1.25rem, 2.5vw, 2rem);
     align-items: start;
-    min-height: min(58dvh, 24rem);
   }
 
   .contact__intro {
@@ -185,7 +229,6 @@
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
     gap: clamp(2rem, 4vw, 4.5rem);
     align-items: start;
-    min-height: min(68dvh, 34rem);
   }
 
   .contact__intro {

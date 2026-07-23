@@ -44,7 +44,7 @@
 .transition-contact-panel .contact {
   width: 100%;
   min-height: 100dvh;
-  padding-block: clamp(3rem, 8vh, 6rem);
+  padding-block: 0;
   background: transparent;
 }
 
