@@ -141,7 +141,7 @@
 
 @keyframes hero-line-expand {
   from {
-    transform: scaleX(0.006);
+    transform: scaleX(0);
   }
   to {
     transform: scaleX(1);
@@ -150,9 +150,11 @@
 
 @layer components {
   .hero-line {
-    transform: scaleX(0.006);
+    transform: scaleX(0);
     transform-origin: center;
-    animation: hero-line-expand 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    /* Démarre quand les cercles sont presque posés */
+    animation: hero-line-expand 2.2s cubic-bezier(0.22, 1, 0.36, 1) 1.5s
+      forwards;
   }
 }
 
