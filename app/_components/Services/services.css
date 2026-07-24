@@ -1,19 +1,28 @@
 .services {
   position: relative;
+  width: 100%;
   --services-line: rgb(255 255 255 / 0.16);
   --services-muted: rgb(255 255 255 / 0.55);
   --services-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --services-reveal: 0;
-  padding-block: clamp(4rem, 10vh, 8rem);
+  --services-title-duration: 1.2s;
+  --services-title-stagger: 0.2s;
+  --service-count: 3;
+  padding-block: clamp(2.5rem, 6vh, 5rem);
 }
 
 .services-pin-target {
+  display: flex;
+  align-items: center;
+  min-height: 100dvh;
   background: #0a0909;
   color: var(--background);
 }
 
 .services-pin-target--pinned {
   background: #0a0909;
+  min-height: 100dvh;
+  overflow: auto;
   will-change: opacity, transform;
 }
 
@@ -66,8 +75,8 @@
   .services__intro {
     flex: 1 1 42%;
     order: 2;
-    position: sticky;
-    top: clamp(3rem, 12vh, 8rem);
+    position: relative;
+    top: auto;
   }
 }
 
@@ -101,11 +110,7 @@
 
 .services__header {
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-block: 1.5rem;
+  padding: 0;
   background: transparent;
   border: none;
   color: inherit;
@@ -113,22 +118,45 @@
   text-align: left;
 }
 
-.services__label,
-.services__icon {
-  opacity: var(--services-reveal);
-  transform: translateY(calc((1 - var(--services-reveal)) * 12px));
+.services__header-reveal {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+
+.services__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.5rem;
+  transform: translateY(100%);
+  transition: transform var(--services-title-duration) var(--services-ease);
+  transition-delay: calc(
+    (var(--service-count) - 1 - var(--content-order, 0)) * 0.2s
+  );
+  will-change: transform;
+}
+
+.services--titles-visible .services__header-row {
+  transform: translateY(0%);
+  transition-delay: calc(var(--content-order, 0) * 0.2s);
 }
 
 .services__label {
   font-size: clamp(0.95rem, 0.5vw + 0.75rem, 1.25rem);
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  color: inherit;
 }
 
 .services__icon {
   display: inline-flex;
+  flex-shrink: 0;
   color: var(--services-muted);
-  transition: transform 0.45s var(--services-ease);
+  transition:
+    transform 0.45s var(--services-ease),
+    color 0.45s var(--services-ease);
 }
 
 .services__item--open .services__icon {
@@ -205,6 +233,11 @@
   .services__line {
     transform: scaleX(1);
     opacity: 1;
+  }
+
+  .services__header-row {
+    transform: none;
+    transition: none;
   }
 
   .services__icon,

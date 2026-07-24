@@ -15,7 +15,7 @@ import "./services-contact-transition.css";
 const PIN_TARGET_SELECTOR = ".services-pin-target";
 const ANCHOR_SELECTOR = ".services__transition-anchor";
 const PIN_SPACER_CLASS = "services-pin-spacer";
-const CURTAIN_START_BUFFER_VIEWPORTS = 1.5;
+const CURTAIN_START_BUFFER_VIEWPORTS = 2.75;
 /** Début du reveal : panel encore sous le viewport */
 const CONTACT_REVEAL_START_VIEWPORTS = 1.45;
 /** Fin du reveal : un peu après le sticky en haut */
@@ -108,18 +108,19 @@ const ServicesContactTransition = () => {
 
     const engagePin = (pinTarget: HTMLElement, scrollY: number) => {
       const rect = pinTarget.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
 
       pinSnapshotRef.current = {
         startScroll: scrollY,
         top: rect.top,
         left: rect.left,
         width: rect.width,
-        height: pinTarget.offsetHeight,
+        height: viewportHeight,
       };
 
       const spacer = document.createElement("div");
       spacer.className = PIN_SPACER_CLASS;
-      spacer.style.height = `${pinSnapshotRef.current.height}px`;
+      spacer.style.height = `${Math.max(pinTarget.offsetHeight, viewportHeight)}px`;
       spacer.setAttribute("aria-hidden", "true");
       pinTarget.parentNode?.insertBefore(spacer, pinTarget);
       spacerRef.current = spacer;
@@ -128,6 +129,7 @@ const ServicesContactTransition = () => {
       pinTarget.style.top = `${rect.top}px`;
       pinTarget.style.left = `${rect.left}px`;
       pinTarget.style.width = `${rect.width}px`;
+      pinTarget.style.height = `${viewportHeight}px`;
       pinTarget.style.zIndex = "10";
       pinTarget.classList.add("services-pin-target--pinned");
       setIsActive(true);

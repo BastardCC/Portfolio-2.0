@@ -1,6 +1,6 @@
 .services-contact-transition-zone {
   /* Temps de lecture Services avant le démarrage des rideaux */
-  --contact-buffer: 150dvh;
+  --contact-buffer: 275dvh;
   --contact-runway: 170dvh;
   /* Contact entre dans le flux vers ~55 % de la course des rideaux */
   --contact-start: calc(
