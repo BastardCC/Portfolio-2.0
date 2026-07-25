@@ -16,15 +16,24 @@ export const CONTACT = {
   socials: [
     {
       label: "Github",
+      hoverLabel: "See projects",
+      hoverIcon: "github",
       href: "https://github.com/",
+      curtainColor: "#E49366",
     },
     {
       label: "LinkedIn",
+      hoverLabel: "Connect",
+      hoverIcon: "linkedin",
       href: "https://www.linkedin.com/",
+      curtainColor: "#7397b7",
     },
     {
       label: "WhatsApp",
+      hoverLabel: "Message",
+      hoverIcon: "whatsapp",
       href: "https://wa.me/261348181838",
+      curtainColor: "#798e7b",
     },
   ],
 } as const;

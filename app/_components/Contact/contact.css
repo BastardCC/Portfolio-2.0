@@ -128,31 +128,87 @@
 }
 
 .contact__social {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-block: 0.95rem;
+  --contact-social-curtain-duration: 0.4s;
+  --contact-social-curtain-color: #7397b7;
+
+  display: block;
   border-bottom: 1px solid var(--contact-line);
   color: inherit;
   text-decoration: none;
   font-size: clamp(0.875rem, 0.2vw + 0.8rem, 0.95rem);
-  transition: opacity 0.3s var(--contact-ease);
 }
 
-.contact__social:hover,
-.contact__social:focus-visible {
-  opacity: 0.65;
+.contact__social-clip {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.contact__social-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--contact-social-curtain-color);
+  transform: translateY(-100%);
+  transition: transform var(--contact-social-curtain-duration) ease;
+  pointer-events: none;
+}
+
+.contact__social--hovered .contact__social-curtain {
+  transform: translateY(0);
+}
+
+.contact__social-content {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  color: inherit;
+}
+
+.contact__social-layer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding-block: 0.95rem;
+  padding-inline: 0.65rem;
+  box-sizing: border-box;
+  transition: transform var(--contact-social-curtain-duration) ease;
+}
+
+.contact__social-layer--out {
+  position: relative;
+  /* Toujours la couleur de base — ne reste jamais blanc au leave */
+  color: var(--foreground);
+  transform: translateY(0);
+}
+
+.contact__social-layer--in {
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  transform: translateY(-105%);
+}
+
+.contact__social--hovered .contact__social-layer--out {
+  transform: translateY(105%);
+}
+
+.contact__social--hovered .contact__social-layer--in {
+  transform: translateY(0);
+}
+
+.contact__social-label {
+  min-width: 0;
 }
 
 .contact__social-icon {
   flex-shrink: 0;
-  transition: transform 0.35s var(--contact-ease);
-}
-
-.contact__social:hover .contact__social-icon,
-.contact__social:focus-visible .contact__social-icon {
-  transform: translate(2px, -2px);
+  display: block;
+  width: 1.375rem;
+  height: 1.375rem;
 }
 
 .contact__bottom {
@@ -221,7 +277,7 @@
     padding-block: 0;
   }
 
-  .contact__social {
+  .contact__social-layer {
     padding-block: 0.85rem;
   }
 }
@@ -251,20 +307,32 @@
     gap: 1rem;
   }
 
-  .contact__social {
+  .contact__social-layer {
     padding-block: 1.1rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .contact__detail-value,
-  .contact__social,
-  .contact__social-icon {
+  .contact__social-layer,
+  .contact__social-curtain {
     transition: none;
   }
 
-  .contact__social:hover .contact__social-icon,
-  .contact__social:focus-visible .contact__social-icon {
-    transform: none;
+  .contact__social--hovered .contact__social-curtain {
+    transform: translateY(0);
+  }
+
+  .contact__social-layer--out,
+  .contact__social--hovered .contact__social-layer--out {
+    transform: translateY(0);
+  }
+
+  .contact__social-layer--in {
+    transform: translateY(-105%);
+  }
+
+  .contact__social--hovered .contact__social-layer--in {
+    transform: translateY(0);
   }
 }
