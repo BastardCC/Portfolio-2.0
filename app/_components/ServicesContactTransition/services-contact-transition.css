@@ -1,14 +1,13 @@
 .services-contact-transition-zone {
   /* Temps de lecture Services avant le démarrage des rideaux */
   --contact-buffer: 275dvh;
-  --contact-runway: 170dvh;
   /* Contact entre dans le flux vers ~55 % de la course des rideaux */
   --contact-start: calc(
     var(--contact-buffer) + var(--curtain-scroll) * 0.55
   );
-  height: calc(
-    var(--contact-buffer) + var(--curtain-scroll) + var(--contact-runway)
-  );
+  /* Hold court après Contact — plus de long scroll mort */
+  --contact-end-hold: 50dvh;
+  height: calc(var(--contact-start) + var(--contact-end-hold));
 }
 
 .transition-contact-flow {

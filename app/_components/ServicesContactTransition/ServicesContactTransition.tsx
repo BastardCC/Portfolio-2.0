@@ -18,8 +18,8 @@ const PIN_SPACER_CLASS = "services-pin-spacer";
 const CURTAIN_START_BUFFER_VIEWPORTS = 2.75;
 /** Début du reveal : panel encore sous le viewport */
 const CONTACT_REVEAL_START_VIEWPORTS = 1.45;
-/** Fin du reveal : un peu après le sticky en haut */
-const CONTACT_REVEAL_END_VIEWPORTS = -0.75;
+/** Fin du reveal : dès que Contact est collé en haut */
+const CONTACT_REVEAL_END_VIEWPORTS = 0.05;
 const CONTACT_REVEAL_LERP = 0.08;
 
 const easeOutQuad = (value: number) => 1 - (1 - value) ** 2;
@@ -149,7 +149,10 @@ const ServicesContactTransition = () => {
       const rect = panel.getBoundingClientRect();
       const start = viewportHeight * CONTACT_REVEAL_START_VIEWPORTS;
       const end = viewportHeight * CONTACT_REVEAL_END_VIEWPORTS;
-      const raw = clamp01((start - rect.top) / Math.max(start - end, 1));
+      let raw = clamp01((start - rect.top) / Math.max(start - end, 1));
+
+      /* Sticky atteint → reveal déjà terminé (évite l’anim SVG en toute fin) */
+      if (rect.top <= 8) raw = 1;
 
       revealTargetRef.current = raw;
     };
