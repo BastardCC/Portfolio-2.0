@@ -1,0 +1,264 @@
+.projects-list-alt {
+  --projects-list-alt-line-duration: 2.2s;
+  --projects-list-alt-line-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --projects-list-alt-line-stagger: 0.12s;
+  --project-card-alt-media: clamp(7.5rem, 28vw, 10.5rem);
+
+  width: 100%;
+  max-width: none;
+  /* Collé à la grille du haut — pas d’espace entre les deux */
+  padding-block: 0;
+  padding-inline: 0;
+}
+
+.projects-list-alt__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  width: 100%;
+}
+
+.projects-list-alt__lines {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  display: none;
+}
+
+.projects-list-alt__line {
+  position: absolute;
+  background: var(--foreground);
+}
+
+.projects-list-alt__line--top,
+.projects-list-alt__line--middle,
+.projects-list-alt__line--bottom {
+  left: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: center;
+}
+
+.projects-list-alt__line--top {
+  /* La ligne du bas de la grille du haut sert déjà de séparateur */
+  display: none;
+}
+
+.projects-list-alt__line--middle {
+  top: 50%;
+}
+
+.projects-list-alt__line--bottom {
+  bottom: 0;
+}
+
+.projects-list-alt__line--vertical {
+  left: 50%;
+  width: 1px;
+  height: 50%;
+  transform: scaleY(0);
+}
+
+.projects-list-alt__line--vertical-top {
+  top: 0;
+  transform-origin: bottom center;
+}
+
+.projects-list-alt__line--vertical-bottom {
+  top: 50%;
+  transform-origin: top center;
+}
+
+.projects-list-alt--visible .projects-list-alt__line--middle {
+  animation: projects-line-expand-x var(--projects-list-alt-line-duration)
+    var(--projects-list-alt-line-ease) forwards;
+}
+
+.projects-list-alt--visible .projects-list-alt__line--vertical-top,
+.projects-list-alt--visible .projects-list-alt__line--vertical-bottom {
+  animation: projects-line-expand-y var(--projects-list-alt-line-duration)
+    var(--projects-list-alt-line-ease)
+    calc(var(--projects-list-alt-line-stagger) * 1.5) forwards;
+}
+
+.projects-list-alt--visible .projects-list-alt__line--bottom {
+  animation: projects-line-expand-x var(--projects-list-alt-line-duration)
+    var(--projects-list-alt-line-ease)
+    calc(var(--projects-list-alt-line-stagger) * 2) forwards;
+}
+
+.project-card-alt {
+  --project-card-alt-ease: cubic-bezier(0.22, 0.97, 0.1, 0.81);
+  --project-card-curtain-duration: 0.4s;
+  --project-card-cursor-size: 6rem;
+  --project-card-ease: cubic-bezier(0.22, 0.97, 0.1, 0.81);
+  --cursor-x: 0px;
+  --cursor-y: 0px;
+
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.5vw, 1.1rem);
+  align-items: center;
+  width: 100%;
+  min-height: calc(var(--project-card-alt-media) + 2.5rem);
+  height: 100%;
+  padding: 1.15rem 1.25rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  background: transparent;
+  transition: color var(--project-card-curtain-duration) ease;
+}
+
+.project-card-alt .project-card__curtain {
+  z-index: 0;
+}
+
+.project-card-alt .project-card__cursor {
+  z-index: 20;
+}
+
+.project-card-alt__media {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 0;
+  width: var(--project-card-alt-media);
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  background: rgb(18 15 15 / 0.06);
+}
+
+.project-card-alt__image {
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 0.8s var(--project-card-alt-ease);
+}
+
+.project-card-alt--hovered .project-card-alt__image,
+.project-card-alt:focus-visible .project-card-alt__image {
+  transform: scale(1.08);
+}
+
+.project-card-alt__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.85rem;
+  min-width: 0;
+  height: var(--project-card-alt-media);
+  padding-block: 0.15rem;
+  padding-inline: 0.35rem 0.5rem;
+  transition: color var(--project-card-curtain-duration) ease;
+}
+
+.project-card-alt--hovered .project-card-alt__body,
+.project-card-alt:focus-visible .project-card-alt__body {
+  color: #fff;
+}
+
+.project-card-alt--hovered .project-card__tag,
+.project-card-alt:focus-visible .project-card__tag {
+  border-color: #fff;
+  color: #fff;
+}
+
+.project-card-alt__meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.project-card-alt__meta .project-card__tags {
+  justify-content: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-card-alt__category {
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.project-card-alt__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.project-card-alt .project-card__title {
+  margin: 0;
+  text-align: left;
+}
+
+.project-card-alt .project-card__description {
+  margin: 0;
+  text-align: left;
+}
+
+@media (width >= 48rem) {
+  .projects-list-alt {
+    --project-card-alt-media: clamp(9rem, 14vw, 11.5rem);
+  }
+
+  .projects-list-alt__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Rangées de même hauteur → ligne milieu pile au centre */
+    grid-auto-rows: 1fr;
+  }
+
+  .projects-list-alt__lines {
+    display: block;
+  }
+
+  .project-card-alt {
+    gap: 1.15rem;
+    padding: 1.35rem 1.5rem;
+    min-height: calc(var(--project-card-alt-media) + 2.7rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .projects-list-alt__line {
+    transform: none;
+    animation: none;
+  }
+
+  .projects-list-alt--visible .projects-list-alt__line--middle,
+  .projects-list-alt--visible .projects-list-alt__line--bottom {
+    transform: scaleX(1);
+  }
+
+  .projects-list-alt--visible .projects-list-alt__line--vertical-top,
+  .projects-list-alt--visible .projects-list-alt__line--vertical-bottom {
+    transform: scaleY(1);
+  }
+
+  .project-card-alt,
+  .project-card-alt__image,
+  .project-card-alt__body,
+  .project-card-alt .project-card__tag,
+  .project-card-alt .project-card__curtain {
+    transition: none;
+  }
+
+  .project-card-alt--hovered .project-card-alt__image,
+  .project-card-alt:focus-visible .project-card-alt__image {
+    transform: none;
+  }
+
+  .project-card-alt .project-card__cursor {
+    display: none;
+  }
+}

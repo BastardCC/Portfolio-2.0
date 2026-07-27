@@ -15,7 +15,7 @@ import { getScrollY, subscribeScrollFrame } from "../scroll-frame";
 import "./projects-awards-transition.css";
 
 const PIN_TARGET_SELECTOR = ".projects-pin-target";
-const ANCHOR_SELECTOR = ".projects-grid__transition-anchor";
+const ANCHOR_SELECTOR = ".projects__transition-anchor";
 const PIN_SPACER_CLASS = "projects-pin-spacer";
 
 type PinSnapshot = {
@@ -49,7 +49,11 @@ const ProjectsAwardsTransition = () => {
       pinTarget.style.top = "";
       pinTarget.style.left = "";
       pinTarget.style.width = "";
+      pinTarget.style.height = "";
+      pinTarget.style.overflow = "";
       pinTarget.style.zIndex = "";
+      pinTarget.style.visibility = "";
+      pinTarget.scrollTop = 0;
     };
 
     const releasePin = (pinTarget: HTMLElement | null) => {
@@ -71,28 +75,38 @@ const ProjectsAwardsTransition = () => {
 
     const engagePin = (pinTarget: HTMLElement, scrollY: number) => {
       const rect = pinTarget.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const fullHeight = pinTarget.offsetHeight;
 
       pinSnapshotRef.current = {
         startScroll: scrollY,
-        top: rect.top,
+        top: 0,
         left: rect.left,
         width: rect.width,
-        height: pinTarget.offsetHeight,
+        height: fullHeight,
       };
 
       const spacer = document.createElement("div");
       spacer.className = PIN_SPACER_CLASS;
-      spacer.style.height = `${pinSnapshotRef.current.height}px`;
+      spacer.style.height = `${fullHeight}px`;
       spacer.setAttribute("aria-hidden", "true");
       pinTarget.parentNode?.insertBefore(spacer, pinTarget);
       spacerRef.current = spacer;
 
+      /*
+        Contenu plus haut que le viewport : on pin en 100dvh
+        et on scrolle l’intérieur jusqu’en bas (dernières cards visibles).
+        Évite top négatif → trou blanc pendant les rideaux.
+      */
       pinTarget.style.position = "fixed";
-      pinTarget.style.top = `${rect.top}px`;
+      pinTarget.style.top = "0";
       pinTarget.style.left = `${rect.left}px`;
       pinTarget.style.width = `${rect.width}px`;
+      pinTarget.style.height = `${viewportHeight}px`;
+      pinTarget.style.overflow = "hidden";
       pinTarget.style.zIndex = "10";
       pinTarget.classList.add("projects-pin-target--pinned");
+      pinTarget.scrollTop = Math.max(0, fullHeight - viewportHeight);
       setIsActive(true);
     };
 
@@ -151,6 +165,11 @@ const ProjectsAwardsTransition = () => {
       );
 
       pinTarget.style.opacity = String(Math.max(0, 1 - projectsFade));
+      if (ready) {
+        pinTarget.style.visibility = "hidden";
+      } else {
+        pinTarget.style.visibility = "";
+      }
 
       setAwardsEngaged(ready);
 

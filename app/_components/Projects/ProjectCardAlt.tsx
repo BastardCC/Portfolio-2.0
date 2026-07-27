@@ -1,6 +1,6 @@
 "use client";
 
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import {
   useCallback,
@@ -9,21 +9,15 @@ import {
   useState,
   type CSSProperties,
   type MouseEvent,
+  type TransitionEvent,
 } from "react";
+import type { ProjectItem } from "./projects-data";
 import "./project-card.css";
+import "./project-card-alt.css";
 
 type CurtainState = "above" | "covering" | "below";
 
-type ProjectCardProps = {
-  title: string;
-  description: string;
-  category: string;
-  tags: string[];
-  image: StaticImageData;
-  bgColor: string;
-  href: string;
-  year?: string;
-};
+type ProjectCardAltProps = ProjectItem;
 
 const CURSOR_LERP = 0.12;
 
@@ -47,7 +41,7 @@ const ProjectCursorIcon = () => (
   </svg>
 );
 
-const ProjectCard = ({
+const ProjectCardAlt = ({
   title,
   description,
   category,
@@ -55,7 +49,7 @@ const ProjectCard = ({
   image,
   bgColor,
   href,
-}: ProjectCardProps) => {
+}: ProjectCardAltProps) => {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
   const targetRef = useRef({ x: 0, y: 0 });
@@ -103,15 +97,18 @@ const ProjectCard = ({
     }
   }, []);
 
-  const setTargetFromEvent = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  const setTargetFromEvent = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      const rect = cardRef.current?.getBoundingClientRect();
+      if (!rect) return;
 
-    targetRef.current = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-  }, []);
+      targetRef.current = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+    },
+    [],
+  );
 
   const showCurtain = useCallback(
     (event: MouseEvent<HTMLAnchorElement>) => {
@@ -149,7 +146,7 @@ const ProjectCard = ({
   );
 
   const handleCurtainTransitionEnd = useCallback(
-    (event: React.TransitionEvent<HTMLSpanElement>) => {
+    (event: TransitionEvent<HTMLSpanElement>) => {
       if (event.propertyName !== "transform") return;
       if (curtainStateRef.current !== "below") return;
 
@@ -163,6 +160,8 @@ const ProjectCard = ({
   );
 
   useEffect(() => () => stopFollowing(), [stopFollowing]);
+
+  const isHovered = curtainState === "covering";
 
   const curtainClassName = [
     "project-card__curtain",
@@ -179,19 +178,27 @@ const ProjectCard = ({
     .filter(Boolean)
     .join(" ");
 
+  const cardClassName = [
+    "project-card-alt",
+    isHovered ? "project-card-alt--hovered" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const cardStyle = {
     "--project-card-curtain-color": bgColor,
   } as CSSProperties;
 
   const cardProps = {
     ref: cardRef,
-    className: "project-card",
+    className: cardClassName,
     style: cardStyle,
     onMouseEnter: showCurtain,
     onMouseLeave: hideCurtain,
     onMouseMove: updatePointer,
     onFocus: handleFocus,
     onBlur: hideCurtain,
+    "aria-label": `Voir le projet ${title}`,
   };
 
   const content = (
@@ -204,40 +211,36 @@ const ProjectCard = ({
       <span ref={cursorRef} className={cursorClassName} aria-hidden>
         <ProjectCursorIcon />
       </span>
-      <header className="project-card__header">
-        <div className="project-card__text-reveal">
-          <h3 className="project-card__title">{title}</h3>
-        </div>
-        <div className="project-card__text-reveal project-card__text-reveal--delay">
-          <p className="project-card__description">{description}</p>
-        </div>
-      </header>
 
-      <div className="project-card__media">
+      <div className="project-card-alt__media">
         <Image
           src={image}
           alt={title}
           fill
-          sizes="(min-width: 1024px) 50vw, 100vw"
-          className="project-card__image"
+          sizes="(max-width: 48rem) 40vw, 12rem"
+          className="project-card-alt__image"
         />
-        <div className="project-card__media-caption">
-          <div className="project-card__text-reveal project-card__text-reveal--in">
-            <h3 className="project-card__title">{title}</h3>
-          </div>
-        </div>
       </div>
 
-      <footer className="project-card__footer">
-        <p className="text-[12px] font-semibold uppercase">{category}</p>
-        <div className="project-card__tags">
-          {tags.map((tag) => (
-            <span key={tag} className="project-card__tag">
-              {tag}
-            </span>
-          ))}
+      <div className="project-card-alt__body">
+        <div className="project-card-alt__meta">
+          <div className="project-card__tags">
+            {tags.map((tag) => (
+              <span key={tag} className="project-card__tag">
+                {tag}
+              </span>
+            ))}
+          </div>
+          <p className="project-card-alt__category text-[12px] font-semibold uppercase">
+            {category}
+          </p>
         </div>
-      </footer>
+
+        <div className="project-card-alt__copy">
+          <h3 className="project-card__title">{title}</h3>
+          <p className="project-card__description">{description}</p>
+        </div>
+      </div>
     </>
   );
 
@@ -248,7 +251,6 @@ const ProjectCard = ({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Voir le projet ${title}`}
       >
         {content}
       </a>
@@ -256,10 +258,10 @@ const ProjectCard = ({
   }
 
   return (
-    <Link {...cardProps} href={href} aria-label={`Voir le projet ${title}`}>
+    <Link {...cardProps} href={href}>
       {content}
     </Link>
   );
 };
 
-export default ProjectCard;
+export default ProjectCardAlt;

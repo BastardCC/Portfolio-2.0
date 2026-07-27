@@ -1,26 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import type { StaticImageData } from "next/image";
 import ProjectCard from "./ProjectCard";
 import ProjectCardReveal from "./ProjectCardReveal";
+import type { ProjectItem } from "./projects-data";
 import "./projects.css";
 
-export type Project = {
-  title: string;
-  description: string;
-  category: string;
-  tags: string[];
-  bgColor: string;
-  href: string;
-};
-
 type ProjectsGridProps = {
-  projects: Project[];
-  image: StaticImageData;
+  projects: ProjectItem[];
 };
 
-const ProjectsGrid = ({ projects, image }: ProjectsGridProps) => {
+const ProjectsGrid = ({ projects }: ProjectsGridProps) => {
   const gridRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -106,11 +96,9 @@ const ProjectsGrid = ({ projects, image }: ProjectsGridProps) => {
 
       {projects.map((project, index) => (
         <ProjectCardReveal key={project.title} index={index}>
-          <ProjectCard {...project} image={image} />
+          <ProjectCard {...project} />
         </ProjectCardReveal>
       ))}
-
-      <div className="projects-grid__transition-anchor" aria-hidden />
     </div>
   );
 };

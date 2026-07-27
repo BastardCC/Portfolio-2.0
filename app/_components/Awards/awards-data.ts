@@ -1,7 +1,7 @@
 import type { StaticImageData } from "next/image";
 import BigCircle from "../Hero/assets/big-circle.png";
 import SmallCircle from "../Hero/assets/small-circle.png";
-import Doonation from "../Projects/assets/doonation.png";
+import Doonation from "../Projects/assets/doonation.webp";
 
 export type AwardItem = {
   title: string;
