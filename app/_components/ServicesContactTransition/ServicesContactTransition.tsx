@@ -17,9 +17,12 @@ const ANCHOR_SELECTOR = ".services__transition-anchor";
 const PIN_SPACER_CLASS = "services-pin-spacer";
 const CURTAIN_START_BUFFER_VIEWPORTS = 2.75;
 /** Début du reveal : panel encore sous le viewport */
-const CONTACT_REVEAL_START_VIEWPORTS = 1.45;
+const CONTACT_REVEAL_START_VIEWPORTS = 1.8;
 /** Fin du reveal : dès que Contact est collé en haut */
 const CONTACT_REVEAL_END_VIEWPORTS = 0.05;
+/** Contact visible dès ~20 % des rideaux (chevauchement avec l’anim rideaux) */
+const CONTACT_CURTAIN_REVEAL_START = 0.2;
+const CONTACT_CURTAIN_REVEAL_SPAN = 0.45;
 const CONTACT_REVEAL_LERP = 0.08;
 
 const easeOutQuad = (value: number) => 1 - (1 - value) ** 2;
@@ -255,6 +258,15 @@ const ServicesContactTransition = () => {
       pinTarget.style.opacity = String(Math.max(0, 1 - servicesFade));
       setProgress(curtainProgress);
       updateContactRevealTarget();
+
+      const earlyFromCurtains = clamp01(
+        (curtainProgress - CONTACT_CURTAIN_REVEAL_START) /
+          CONTACT_CURTAIN_REVEAL_SPAN,
+      );
+      revealTargetRef.current = Math.max(
+        revealTargetRef.current,
+        earlyFromCurtains * 0.5,
+      );
     };
 
     const scheduleUpdate = () => {
