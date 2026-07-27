@@ -1,5 +1,5 @@
-import textContactMark from "./assets/text-contact.svg";
 import ContactSocialLink from "./ContactSocialLink";
+import ContactStatement from "./ContactStatement";
 import { CONTACT } from "./contact-data";
 import "./contact.css";
 
@@ -52,22 +52,7 @@ const Contact = () => {
         </div>
       </div>
 
-      <div className="contact__bottom">
-        <p className="contact__statement">
-          <img
-            className="contact__statement-mark"
-            src={
-              typeof textContactMark === "string"
-                ? textContactMark
-                : textContactMark.src
-            }
-            alt={CONTACT.statement}
-            width={1490}
-            height={186}
-            decoding="async"
-          />
-        </p>
-      </div>
+      <ContactStatement />
     </div>
   );
 };
