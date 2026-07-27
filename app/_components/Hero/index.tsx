@@ -10,11 +10,11 @@ const heroBodyClassName =
   "hero__content container relative z-10 mt-[clamp(2rem,8vw,5rem)] text-[clamp(1.25rem,2.5vw+0.75rem,3.75rem)] leading-snug";
 
 const heroBodyLines = [
-  "Lorem ipsum, dolor sit amet consectetur",
-  "adipisicing elit. Veniam vero ipsum unde ratione.",
-  "Reprehenderit mollitia excepturi illum vero iure et dolore",
-  "sit placeat aliquid sint corrupti sapiente, rerum vel aut",
-  "dignissimos fuga officia error labore!",
+  "I craft digital products end to end — from the first",
+  "interface sketch to production-ready systems. Clean",
+  "architecture, thoughtful motion, and performance that",
+  "holds up. Less noise, more clarity. Built to ship,",
+  "built to last.",
 ];
 
 const Hero = () => {
@@ -55,8 +55,8 @@ const Hero = () => {
               className="w-full md:max-w-[30%]"
             >
               <p className="text-xs uppercase md:text-right">
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Veniam
-                vero ipsum unde ratione.
+                From idea to production — interfaces, APIs, and systems that feel
+                fast and stay solid.
               </p>
             </RevealText>
           </div>
@@ -70,8 +70,7 @@ const Hero = () => {
               className="w-full md:max-w-[15%]"
             >
               <p className="text-xs uppercase">
-                Lorem ipsum, dolor sit amet consectetur adipisicing elit. Veniam
-                vero ipsum.
+                Front-end craft. Back-end clarity. End-to-end delivery.
               </p>
             </RevealText>
             <RevealText
