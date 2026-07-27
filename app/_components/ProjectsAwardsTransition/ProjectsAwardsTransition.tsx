@@ -17,6 +17,8 @@ import "./projects-awards-transition.css";
 const PIN_TARGET_SELECTOR = ".projects-pin-target";
 const ANCHOR_SELECTOR = ".projects__transition-anchor";
 const PIN_SPACER_CLASS = "projects-pin-spacer";
+/** Scroll libre après le pin avant que les rideaux ne commencent */
+const CURTAIN_START_BUFFER_VIEWPORTS = 1.25;
 
 type PinSnapshot = {
   startScroll: number;
@@ -157,7 +159,12 @@ const ProjectsAwardsTransition = () => {
       if (!activeSnapshot) return;
 
       const scrolled = Math.max(0, scrollY - activeSnapshot.startScroll);
-      const curtainProgress = Math.min(scrolled / appearScrollDistance, 1);
+      const bufferPx = viewportHeight * CURTAIN_START_BUFFER_VIEWPORTS;
+      const effectiveScrolled = Math.max(0, scrolled - bufferPx);
+      const curtainProgress = Math.min(
+        effectiveScrolled / appearScrollDistance,
+        1,
+      );
       const ready = areCurtainsComplete(curtainProgress);
       const projectsFade = Math.max(
         0,
