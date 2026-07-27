@@ -16,15 +16,15 @@ export const SERVICES: ServiceCategory[] = [
     groups: [
       {
         title: "Frameworks & Libraries",
-        items: ["React", "Next", "Vue", "Javascript ES6", "React Native"],
+        items: ["React", "Next", "Vue", "React Native", "Javascript ES6"],
       },
       {
         title: "Styling & UI",
-        items: ["Tailwind", "CSS", "Sass", "Framer Motion", "GSAP"],
+        items: ["Tailwind", "Material UI", "Framer Motion", "Styled Components", "Chakra UI"],
       },
       {
-        title: "Web & Animation",
-        items: ["Three.js", "WebGL", "Lenis", "Canvas", "SVG"],
+        title: "Design & Animation",
+        items: ["Three.js", "WebGL", "Lenis", "SVG", "Figma"],
       },
     ],
   },
@@ -34,15 +34,15 @@ export const SERVICES: ServiceCategory[] = [
     groups: [
       {
         title: "Langages & Runtime",
-        items: ["Node.js", "TypeScript", "Python", "PHP"],
+        items: ["Node.js", "TypeScript","Ruby"],
       },
       {
         title: "Bases de données",
-        items: ["PostgreSQL", "MongoDB", "Supabase", "Prisma"],
+        items: ["PostgreSQL", "MongoDB", "Supabase", "Prisma", "Convex"],
       },
       {
         title: "API & Services",
-        items: ["REST", "GraphQL", "Stripe", "Auth"],
+        items: ["REST", "Stripe", "Auth"],
       },
     ],
   },
@@ -52,19 +52,19 @@ export const SERVICES: ServiceCategory[] = [
     groups: [
       {
         title: "CI / CD",
-        items: ["GitHub Actions", "Vercel", "Docker"],
+        items: ["GitHub Actions", "Vercel", "Netlify", "Docker"],
       },
       {
         title: "Outils",
-        items: ["n8n", "Zapier", "Webhooks"],
+        items: ["n8n", "Webhooks"],
       },
       {
         title: "Tests & Qualité",
-        items: ["Vitest", "Playwright", "ESLint"],
+        items: ["Vitest", "Jest", "ESLint"],
       },
     ],
   },
 ];
 
 export const SERVICES_DESCRIPTION =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+  "Fast, fluid web experiences — front-end to automation, with modern stacks, thoughtful motion, and architecture ready to ship.";
