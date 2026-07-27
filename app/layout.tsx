@@ -21,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${splineSans.variable} antialiased`}>
-      <body className={`${splineSans.className} min-h-full flex flex-col`}>
+      <body
+        className={`${splineSans.className} min-h-full flex flex-col`}
+        suppressHydrationWarning
+      >
         <SmoothScroll>
           <script
             dangerouslySetInnerHTML={{
