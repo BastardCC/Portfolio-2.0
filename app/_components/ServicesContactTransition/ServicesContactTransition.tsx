@@ -1,5 +1,6 @@
 "use client";
 
+import { useLenis } from "lenis/react";
 import { useEffect, useRef, useState } from "react";
 import Contact from "../Contact";
 import TransitionCurtains from "../ProjectsAwardsTransition/TransitionCurtains";
@@ -24,6 +25,21 @@ const CONTACT_REVEAL_END_VIEWPORTS = 0.05;
 const CONTACT_CURTAIN_REVEAL_START = 0.2;
 const CONTACT_CURTAIN_REVEAL_SPAN = 0.45;
 const CONTACT_REVEAL_LERP = 0.08;
+/**
+ * Freinage fin de page (style Lenis / Akaru) :
+ * scroll ralenti en continu — pas d’arrêt sec, même en scroll rapide.
+ */
+const CONTACT_APPROACH_VIEWPORTS = 2.2;
+const CONTACT_APPROACH_SPEED_FAR = 0.24;
+const CONTACT_APPROACH_SPEED_NEAR = 0.09;
+const CONTACT_APPROACH_MAX_STEP = 10;
+const CONTACT_END_SOFTEN_VIEWPORTS = 2;
+const CONTACT_END_SPEED_START = 0.3;
+const CONTACT_END_SPEED_END = 0.07;
+const CONTACT_END_MAX_STEP = 4;
+const CONTACT_MAX_VELOCITY = 0.85;
+
+const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
 
 const easeOutQuad = (value: number) => 1 - (1 - value) ** 2;
 const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
@@ -63,6 +79,7 @@ const ServicesContactTransition = () => {
   const revealTargetRef = useRef(0);
   const revealCurrentRef = useRef(0);
   const contactActiveRef = useRef(false);
+  const lenis = useLenis();
   const [progress, setProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [contactActive, setContactActive] = useState(false);
@@ -70,6 +87,105 @@ const ServicesContactTransition = () => {
   const appears = Array.from({ length: CURTAIN_COUNT }, (_, bottomIndex) =>
     getCurtainAppear(progress, bottomIndex),
   );
+
+  /* Ralentissement progressif : approche Contact + fin de page */
+  useEffect(() => {
+    if (!lenis) return;
+
+    let softLanding = false;
+
+    const inSlowZone = () => {
+      const vh = window.innerHeight;
+      const remaining = Math.max(0, lenis.limit - lenis.scroll);
+      const panelTop =
+        contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+      const settled = contactActiveRef.current && panelTop <= 12;
+      const approaching = panelTop < vh * CONTACT_APPROACH_VIEWPORTS;
+      const nearEnd = remaining < vh * CONTACT_END_SOFTEN_VIEWPORTS;
+      return approaching || settled || nearEnd;
+    };
+
+    const onVirtualScroll = (data: { deltaY: number }) => {
+      if (data.deltaY <= 0) {
+        if (softLanding) {
+          softLanding = false;
+          lenis.scrollTo(lenis.scroll, { immediate: true, force: true });
+        }
+        return;
+      }
+
+      if (!inSlowZone()) return;
+
+      const vh = window.innerHeight;
+      const remaining = Math.max(0, lenis.limit - lenis.scroll);
+      const endZone = vh * CONTACT_END_SOFTEN_VIEWPORTS;
+      const approachZone = vh * CONTACT_APPROACH_VIEWPORTS;
+      const panelTop =
+        contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+      const settled = contactActiveRef.current && panelTop <= 12;
+
+      let speed: number;
+      let maxStep: number;
+
+      if (!settled) {
+        const t = clamp01(panelTop / Math.max(approachZone, 1));
+        speed =
+          CONTACT_APPROACH_SPEED_NEAR +
+          (CONTACT_APPROACH_SPEED_FAR - CONTACT_APPROACH_SPEED_NEAR) * t;
+        maxStep = CONTACT_APPROACH_MAX_STEP;
+      } else {
+        const t = clamp01(remaining / Math.max(endZone, 1));
+        speed =
+          CONTACT_END_SPEED_END +
+          (CONTACT_END_SPEED_START - CONTACT_END_SPEED_END) * t;
+        maxStep = Math.min(
+          CONTACT_END_MAX_STEP,
+          Math.max(remaining * 0.05, 1.5),
+        );
+      }
+
+      data.deltaY = Math.min(data.deltaY * speed, maxStep);
+    };
+
+    const onScroll = () => {
+      const velocity = lenis.velocity;
+
+      if (velocity < -0.05) {
+        softLanding = false;
+        return;
+      }
+
+      if (!inSlowZone() || softLanding) return;
+
+      if (velocity > CONTACT_MAX_VELOCITY) {
+        softLanding = true;
+        const vh = window.innerHeight;
+        const panelTop =
+          contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+        const ahead = Math.min(
+          lenis.limit,
+          lenis.scroll + Math.min(vh * 0.12, Math.max(panelTop, vh * 0.06)),
+        );
+
+        lenis.scrollTo(ahead, {
+          duration: 1.35,
+          easing: easeOutExpo,
+          force: true,
+          onComplete: () => {
+            softLanding = false;
+          },
+        });
+      }
+    };
+
+    lenis.on("virtual-scroll", onVirtualScroll);
+    lenis.on("scroll", onScroll);
+
+    return () => {
+      lenis.off("virtual-scroll", onVirtualScroll);
+      lenis.off("scroll", onScroll);
+    };
+  }, [lenis]);
 
   useEffect(() => {
     const zone = zoneRef.current;

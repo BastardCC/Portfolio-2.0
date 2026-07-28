@@ -2,7 +2,7 @@
   --projects-list-alt-line-duration: 2.2s;
   --projects-list-alt-line-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --projects-list-alt-line-stagger: 0.12s;
-  --project-card-alt-media: clamp(7.5rem, 28vw, 10.5rem);
+  --project-card-alt-media: clamp(8.5rem, 30vw, 11.5rem);
 
   width: 100%;
   max-width: none;
@@ -105,9 +105,9 @@
   gap: clamp(0.75rem, 1.5vw, 1.1rem);
   align-items: center;
   width: 100%;
-  min-height: calc(var(--project-card-alt-media) + 2.5rem);
+  min-height: calc(var(--project-card-alt-media) + 3rem);
   height: 100%;
-  padding: 1.15rem 1.25rem;
+  padding: 1.35rem 1.25rem;
   box-sizing: border-box;
   overflow: hidden;
   color: inherit;
@@ -209,7 +209,7 @@
 
 @media (width >= 48rem) {
   .projects-list-alt {
-    --project-card-alt-media: clamp(9rem, 14vw, 11.5rem);
+    --project-card-alt-media: clamp(11rem, 18vw, 14.5rem);
   }
 
   .projects-list-alt__grid {
@@ -223,9 +223,9 @@
   }
 
   .project-card-alt {
-    gap: 1.15rem;
-    padding: 1.35rem 1.5rem;
-    min-height: calc(var(--project-card-alt-media) + 2.7rem);
+    gap: 1.25rem;
+    padding: 1.75rem 1.5rem;
+    min-height: calc(var(--project-card-alt-media) + 3.5rem);
   }
 }
 

@@ -5,9 +5,12 @@
   --contact-start: calc(
     var(--contact-buffer) + var(--curtain-scroll) * 0.28
   );
-  /* Hold court après Contact — plus de long scroll mort */
-  --contact-end-hold: 50dvh;
-  height: calc(var(--contact-start) + var(--contact-end-hold));
+  /*
+    Pas de hold supplémentaire : évite le « reste de scroll » visible en bas
+    (le ralenti est géré par Lenis virtual-scroll, pas par de la hauteur morte).
+  */
+  --contact-end-hold: 0;
+  height: var(--contact-start);
 }
 
 .transition-contact-flow {
