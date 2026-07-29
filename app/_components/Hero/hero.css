@@ -62,32 +62,32 @@
 }
 
 .hero-circle__asset--big {
-  transform: translate(90vw, 85vh);
-  animation: hero-circle-enter-big 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.15s
+  transform: translate(90vw, 85vh) scale(0.7);
+  animation: hero-circle-enter-big 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s
     forwards;
 }
 
 .hero-circle__asset--small {
-  transform: translate(75vw, 70vh);
+  transform: translate(75vw, 70vh) scale(0.7);
   animation: hero-circle-enter-small 2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
     forwards;
 }
 
 @keyframes hero-circle-enter-big {
   from {
-    transform: translate(90vw, 85vh);
+    transform: translate(90vw, 85vh) scale(0.88);
   }
   to {
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1);
   }
 }
 
 @keyframes hero-circle-enter-small {
   from {
-    transform: translate(75vw, 70vh);
+    transform: translate(75vw, 70vh) scale(0.88);
   }
   to {
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1);
   }
 }
 
@@ -150,10 +150,12 @@
 
 @layer components {
   .hero-line {
+    height: 1.5px;
+    background-color: #5e5e5e;
     transform: scaleX(0);
     transform-origin: center;
     /* Démarre quand les cercles sont presque posés */
-    animation: hero-line-expand 2.2s cubic-bezier(0.22, 1, 0.36, 1) 1.5s
+    animation: hero-line-expand 1.8s cubic-bezier(0.22, 1, 0.36, 1) 1.2s
       forwards;
   }
 }

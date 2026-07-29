@@ -61,7 +61,7 @@ const Hero = () => {
             </RevealText>
           </div>
 
-          <div className="hero-line h-px w-full bg-foreground" aria-hidden />
+          <div className="hero-line w-full" aria-hidden />
 
           <div className="flex flex-col gap-4 py-2 md:flex-row md:items-start md:justify-between md:gap-0">
             <RevealText
