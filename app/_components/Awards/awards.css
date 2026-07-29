@@ -82,6 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-right: clamp(3rem, 8vw, 6.5rem);
   pointer-events: none;
   overflow: hidden;
 }
@@ -159,14 +160,16 @@
 @media (width >= 64rem) {
   .awards__layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.74fr) minmax(0, 1.26fr);
     align-items: center;
-    gap: clamp(2rem, 5vw, 4rem);
+    gap: clamp(2rem, 4vw, 3.5rem);
   }
 
   .awards__panel--list {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+    width: 100%;
   }
 }
 
@@ -186,6 +189,7 @@
 }
 
 .awards__trophy--decorative {
+  --awards-trophy-shift-x: clamp(-2rem, -4vw, -5rem);
   position: relative;
   inset: auto;
   width: min(92vw, 52rem);
@@ -193,7 +197,7 @@
   cursor: default;
   touch-action: auto;
   opacity: 0;
-  transform: rotate(-14deg) scale(0.88);
+  transform: translateX(var(--awards-trophy-shift-x)) rotate(-14deg) scale(0.88);
   overflow: visible;
   transition:
     opacity 1.5s var(--awards-ease) 0.1s,
@@ -202,14 +206,14 @@
 
 .awards__trophy--decorative.awards__trophy--scroll-appear {
   opacity: var(--trophy-appear, 0);
-  transform: rotate(-14deg)
+  transform: translateX(var(--awards-trophy-shift-x)) rotate(-14deg)
     scale(calc(0.88 + 0.12 * var(--trophy-appear, 0)));
   transition: none;
 }
 
 .awards__trophy--decorative.awards__trophy--visible {
   opacity: 1;
-  transform: rotate(-14deg) scale(1);
+  transform: translateX(var(--awards-trophy-shift-x)) rotate(-14deg) scale(1);
 }
 
 .awards__trophy--visible {
@@ -228,19 +232,18 @@
 }
 
 .awards-list {
-  width: 100%;
+  width: min(100%, 42rem);
+  margin-inline-start: auto;
   overflow: visible;
 }
 
 .awards-item {
   --awards-item-curtain-duration: 0.4s;
-  --awards-item-cursor-size: 9rem;
-  --awards-item-cursor-offset-x: 0rem;
-  --awards-item-cursor-offset-y: -3rem;
-  --cursor-x: 0px;
-  --cursor-y: 0px;
 
   position: relative;
+  display: block;
+  color: inherit;
+  text-decoration: none;
   overflow: visible;
 }
 
@@ -260,41 +263,6 @@
 
 .awards-item--hovered {
   z-index: 2;
-}
-
-.awards-item__cursor {
-  position: absolute;
-  top: var(--cursor-y);
-  left: var(--cursor-x);
-  z-index: 30;
-  width: var(--awards-item-cursor-size);
-  height: var(--awards-item-cursor-size);
-  border: 2px solid var(--foreground);
-  border-radius: 50%;
-  overflow: hidden;
-  pointer-events: none;
-  transform: translate(
-      var(--awards-item-cursor-offset-x),
-      calc(-100% - var(--awards-item-cursor-offset-y))
-    )
-    scale(0.5);
-  opacity: 0;
-  transition:
-    transform 0.25s var(--awards-ease),
-    opacity 0.2s ease;
-}
-
-.awards-item__cursor--visible {
-  transform: translate(
-      var(--awards-item-cursor-offset-x),
-      calc(-100% - var(--awards-item-cursor-offset-y))
-    )
-    scale(1);
-  opacity: 1;
-}
-
-.awards-item__cursor-image {
-  object-fit: cover;
 }
 
 .awards-item__curtain {
@@ -332,24 +300,51 @@
 }
 
 .awards-item__row {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) auto;
-  align-items: center;
-  gap: 0.75rem 1rem;
-  padding: 1rem 0.75rem;
   transform: translateY(100%);
-  transition:
-    transform var(--awards-content-duration) var(--awards-ease),
-    color var(--awards-item-curtain-duration) ease;
+  transition: transform var(--awards-content-duration) var(--awards-ease);
   transition-delay: calc(
     (var(--award-count) - 1 - var(--content-order)) * var(--awards-content-stagger)
   );
 }
 
+.awards-item__layer {
+  grid-area: 1 / 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 1.25rem;
+  padding: 1rem 0.75rem;
+  box-sizing: border-box;
+  transition: transform var(--awards-item-curtain-duration) ease;
+}
+
+.awards-item__layer--out {
+  transform: translateY(0);
+}
+
+.awards-item__layer--in {
+  color: var(--foreground);
+  transform: translateY(-105%);
+}
+
+.awards-item--hovered .awards-item__layer--out {
+  transform: translateY(105%);
+}
+
+.awards-item--hovered .awards-item__layer--in {
+  transform: translateY(0);
+}
+
 @media (width >= 48rem) {
-  .awards-item__row {
-    gap: 1rem 2rem;
+  .awards-item__layer {
+    column-gap: 2rem;
     padding: 1rem 1.25rem;
+  }
+
+  .awards-item__title {
+    white-space: nowrap;
   }
 }
 
@@ -358,27 +353,10 @@
   transition-delay: calc(var(--content-order) * var(--awards-content-stagger));
 }
 
-.awards-item--hovered .awards-item__title,
-.awards-item--hovered .awards-item__icon {
-  color: var(--foreground);
-}
-
-.awards-item--hovered .awards-item__description {
-  color: rgb(18 15 15 / 0.72);
-}
-
 .awards-item__title {
   font-size: clamp(1.0625rem, 0.5vw + 0.9rem, 1.3125rem);
   line-height: 1.3;
-  font-weight: 500;
-  transition: color var(--awards-item-curtain-duration) ease;
-}
-
-.awards-item__description {
-  font-size: clamp(0.9375rem, 0.4vw + 0.8rem, 1.125rem);
-  line-height: 1.4;
-  color: rgb(255 255 255 / 0.72);
-  transition: color var(--awards-item-curtain-duration) ease;
+  font-weight: 400;
 }
 
 .awards-item__icon {
@@ -387,13 +365,12 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  color: var(--background);
-  transition: color var(--awards-item-curtain-duration) ease;
+  justify-self: end;
 }
 
 .awards-item__icon svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .awards-item__line {
@@ -405,11 +382,15 @@
   transform-origin: right center;
   opacity: 0;
   will-change: transform;
-  transition: transform 0.4s linear;
+  transition:
+    transform 0.4s linear,
+    background var(--awards-item-curtain-duration) ease,
+    height var(--awards-item-curtain-duration) ease;
 }
 
 .awards-item--hovered .awards-item__line {
-  background: rgb(18 15 15 / 0.18);
+  height: 1.5px;
+  background: rgb(18 15 15 / 0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -440,8 +421,21 @@
     transform: translateY(0);
   }
 
-  .awards-item__cursor {
-    display: none;
+  .awards-item__layer {
+    transition: none;
+  }
+
+  .awards-item__layer--out,
+  .awards-item--hovered .awards-item__layer--out {
+    transform: translateY(0);
+  }
+
+  .awards-item__layer--in {
+    transform: translateY(-105%);
+  }
+
+  .awards-item--hovered .awards-item__layer--in {
+    transform: translateY(0);
   }
 
   .awards__trophy {

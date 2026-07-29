@@ -3,12 +3,15 @@
 import type { StaticImageData } from "next/image";
 import type { CSSProperties } from "react";
 import AwardItem from "./AwardItem";
+import type { AwardPlace } from "./awards-data";
 import "./awards.css";
 
 export type Award = {
   title: string;
-  description: string;
+  hoverTitle: string;
+  place: AwardPlace;
   image: StaticImageData;
+  url: string;
 };
 
 type AwardListProps = {

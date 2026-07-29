@@ -1,36 +1,49 @@
 import type { StaticImageData } from "next/image";
-import BigCircle from "../Hero/assets/big-circle.png";
-import SmallCircle from "../Hero/assets/small-circle.png";
-import Doonation from "../Projects/assets/doonation.webp";
+import FrontendAwards2022 from "./assets/fa-award.webp";
+import InteruniversityHackathon2023 from "./assets/hiu.webp";
+import WCCFrontend2022 from "./assets/wcc.webp";
+import Hackit from "./assets/hackit.webp";
+
+export type AwardPlace = "first" | "choice";
 
 export type AwardItem = {
   title: string;
-  description: string;
+  hoverTitle: string;
+  place: AwardPlace;
   image: StaticImageData;
+  url: string;
 };
 
 export const AWARDS_DESCRIPTION =
-  "Texte de description des récompenses et distinctions obtenues au fil des projets.";
+  "A handful of competitions, a few sleepless nights, and the recognition that came with them.";
 
 export const AWARDS: AwardItem[] = [
   {
-    title: "Award 1",
-    description: "Award Description",
-    image: Doonation,
+    title: "Frontend Awards 2022",
+    hoverTitle: "First Place",
+    place: "first",
+    image: FrontendAwards2022,
+    url: "https://fa-2022-yasai.netlify.app/",
   },
   {
-    title: "Award 2",
-    description: "Award Description",
-    image: BigCircle,
+    title: "WCC Frontend 2022",
+    hoverTitle: "First Place",
+    place: "first",
+    image: WCCFrontend2022,
+    url: "https://www.facebook.com/Techzara/posts/pfbid02gRo5MbgQHEjA31TXf9wvvniPCN1NwEa14KWLKWssBRLJkMMDPPmM1FQkhStY5KdCl",
   },
   {
-    title: "Award 3",
-    description: "Award Description",
-    image: SmallCircle,
+    title: "Hack-it",
+    hoverTitle: "First Place",
+    place: "first",
+    image: Hackit,
+    url: "https://www.facebook.com/permalink.php?story_fbid=pfbid0H9rFyeJQ8ju2VtCZV24JHHceBbrGvSCzfc6rzk18FAYnhaB6jjYcaJJ3XYoMZiASl&id=100093402235827"
   },
   {
-    title: "Award 4",
-    description: "Award Description",
-    image: Doonation,
+    title: "Interuniversity Hackathon 2023",
+    hoverTitle: "Judge's Choice",
+    place: "choice",
+    image: InteruniversityHackathon2023,
+    url: "https://www.facebook.com/photo/?fbid=529076589341334&set=a.493988452850148",
   },
 ];
