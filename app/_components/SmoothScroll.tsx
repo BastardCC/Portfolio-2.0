@@ -15,7 +15,7 @@ const lenisEasing = (time: number) =>
  */
 const LENIS_OPTIONS = {
   autoRaf: true,
-  duration: 2,
+  duration: 1,
   easing: lenisEasing,
   smoothWheel: true,
   wheelMultiplier: 0.85,

@@ -19,6 +19,19 @@ const ANCHOR_SELECTOR = ".projects__transition-anchor";
 const PIN_SPACER_CLASS = "projects-pin-spacer";
 /** Scroll libre après le pin avant que les rideaux ne commencent */
 const CURTAIN_START_BUFFER_VIEWPORTS = 1.25;
+/**
+ * Réserve de scroll interne gardée au moment du pin : le contenu continue de
+ * glisser sur cette distance au lieu de se figer net.
+ */
+const PIN_DRIFT_VIEWPORTS = 0.4;
+/**
+ * Course de scroll qui absorbe ce glissement. Le facteur 3 est la pente à
+ * l'origine de easeOutCubic : le contenu démarre exactement à la vitesse du
+ * scroll, puis retombe à zéro. Doit rester ≤ CURTAIN_START_BUFFER_VIEWPORTS.
+ */
+const PIN_DRIFT_SCROLL_VIEWPORTS = PIN_DRIFT_VIEWPORTS * 3;
+
+const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
 
 type PinSnapshot = {
   startScroll: number;
@@ -26,6 +39,7 @@ type PinSnapshot = {
   left: number;
   width: number;
   height: number;
+  drift: number;
 };
 
 const ProjectsAwardsTransition = () => {
@@ -75,7 +89,11 @@ const ProjectsAwardsTransition = () => {
       pinTarget.classList.remove("projects-pin-target--pinned");
     };
 
-    const engagePin = (pinTarget: HTMLElement, scrollY: number) => {
+    const engagePin = (
+      pinTarget: HTMLElement,
+      scrollY: number,
+      drift: number,
+    ) => {
       const rect = pinTarget.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const fullHeight = pinTarget.offsetHeight;
@@ -86,6 +104,7 @@ const ProjectsAwardsTransition = () => {
         left: rect.left,
         width: rect.width,
         height: fullHeight,
+        drift,
       };
 
       const spacer = document.createElement("div");
@@ -108,7 +127,7 @@ const ProjectsAwardsTransition = () => {
       pinTarget.style.overflow = "hidden";
       pinTarget.style.zIndex = "10";
       pinTarget.classList.add("projects-pin-target--pinned");
-      pinTarget.scrollTop = Math.max(0, fullHeight - viewportHeight);
+      pinTarget.scrollTop = Math.max(0, fullHeight - viewportHeight - drift);
       setIsActive(true);
     };
 
@@ -142,7 +161,15 @@ const ProjectsAwardsTransition = () => {
         return;
       }
 
-      if (!snapshot && anchorBottom > viewportHeight + 0.5) {
+      /* On accroche avant que le contenu ne touche le bas du viewport pour
+         garder de quoi le laisser glisser en douceur. */
+      const pinFullHeight = snapshot?.height ?? pinTarget?.offsetHeight ?? 0;
+      const pinDrift = Math.min(
+        Math.max(0, pinFullHeight - viewportHeight),
+        viewportHeight * PIN_DRIFT_VIEWPORTS,
+      );
+
+      if (!snapshot && anchorBottom > viewportHeight + pinDrift + 0.5) {
         releasePin(pinTarget);
         setProgress(0);
         setTransitionReady(false);
@@ -152,13 +179,22 @@ const ProjectsAwardsTransition = () => {
       if (!pinTarget) return;
 
       if (!snapshot) {
-        engagePin(pinTarget, scrollY);
+        engagePin(pinTarget, scrollY, pinDrift);
       }
 
       const activeSnapshot = pinSnapshotRef.current;
       if (!activeSnapshot) return;
 
       const scrolled = Math.max(0, scrollY - activeSnapshot.startScroll);
+
+      const driftRunway = viewportHeight * PIN_DRIFT_SCROLL_VIEWPORTS;
+      const driftProgress =
+        driftRunway > 0 ? Math.min(1, scrolled / driftRunway) : 1;
+      const maxScrollTop = Math.max(0, activeSnapshot.height - viewportHeight);
+
+      pinTarget.scrollTop =
+        maxScrollTop - activeSnapshot.drift * (1 - easeOutCubic(driftProgress));
+
       const bufferPx = viewportHeight * CURTAIN_START_BUFFER_VIEWPORTS;
       const effectiveScrolled = Math.max(0, scrolled - bufferPx);
       const curtainProgress = Math.min(
