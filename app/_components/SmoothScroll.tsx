@@ -15,11 +15,11 @@ const lenisEasing = (time: number) =>
  */
 const LENIS_OPTIONS = {
   autoRaf: true,
-  duration: 1.15,
+  duration: 2,
   easing: lenisEasing,
   smoothWheel: true,
-  wheelMultiplier: 0.72,
-  touchMultiplier: 0.85,
+  wheelMultiplier: 0.85,
+  touchMultiplier: 1,
   syncTouch: false,
 };
 

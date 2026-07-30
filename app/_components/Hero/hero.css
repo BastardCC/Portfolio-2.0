@@ -15,28 +15,63 @@
 }
 
 .hero__content {
+  --hero-title-size: clamp(2.75rem, 9vw + 0.5rem, 7rem);
+  /* Respiration interne des masques de reveal des titres (jambages, accents) */
+  --hero-title-mask-top: calc(var(--hero-title-size) * 0.12);
+  --hero-title-mask-bottom: calc(var(--hero-title-size) * 0.35);
+  /* Écart visuel voulu entre les paragraphes et le trait */
+  --hero-aside-gap: 10px;
+  --hero-row-padding: 0.5rem;
+  /* Distance bord de boîte <-> ligne de base et haut des capitales des
+     paragraphes (text-xs, leading-snug), métriques Spline Sans */
+  --hero-aside-baseline: 0.41rem;
+  --hero-aside-cap-top: 0.35rem;
+
   position: relative;
   z-index: 10;
 }
 
+.hero__row {
+  padding-block: var(--hero-row-padding);
+}
+
 .hero__title {
-  font-size: clamp(2.75rem, 9vw + 0.5rem, 7rem);
+  font-size: var(--hero-title-size);
   line-height: 1.25;
 }
 
 .hero__title-reveal.reveal-text--rise > .hero__title {
-  padding-bottom: 0.35em;
+  padding-bottom: var(--hero-title-mask-bottom);
 }
 
 .hero__title-reveal.reveal-text--descend > .hero__title {
-  padding-top: 0.12em;
-  padding-bottom: 0.35em;
+  padding-top: var(--hero-title-mask-top);
+  padding-bottom: var(--hero-title-mask-bottom);
 }
 
 @media (width >= 48rem) {
+  .hero__content {
+    --hero-title-size: clamp(4rem, 7vw + 1rem, 7rem);
+  }
+
   .hero__title {
-    font-size: clamp(4rem, 7vw + 1rem, 7rem);
     line-height: 1.15;
+  }
+
+  /* On retire le padding de rangée et le creux sous la dernière ligne de base
+     pour que le texte tombe à --hero-aside-gap du trait. */
+  .hero__aside--above-line {
+    margin-bottom: calc(
+      var(--hero-aside-gap) - var(--hero-row-padding) -
+        var(--hero-aside-baseline)
+    );
+  }
+
+  /* Idem au-dessus de la première ligne, mesurée au haut des capitales */
+  .hero__aside--below-line {
+    margin-top: calc(
+      var(--hero-aside-gap) - var(--hero-row-padding) - var(--hero-aside-cap-top)
+    );
   }
 }
 
@@ -69,7 +104,7 @@
 
 .hero-circle__asset--small {
   transform: translate(75vw, 70vh) scale(0.7);
-  animation: hero-circle-enter-small 2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
+  animation: hero-circle-enter-small 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
     forwards;
 }
 

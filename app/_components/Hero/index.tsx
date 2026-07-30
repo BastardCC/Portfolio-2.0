@@ -41,7 +41,7 @@ const Hero = () => {
         </div>
 
         <div className="hero__content container">
-          <div className="flex flex-col gap-4 py-2 md:flex-row md:items-end md:justify-between md:gap-0">
+          <div className="hero__row flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-0">
             <RevealText
               direction="rise"
               delay={0.65}
@@ -52,7 +52,7 @@ const Hero = () => {
             <RevealText
               direction="rise"
               delay={0.95}
-              className="w-full md:max-w-[30%]"
+              className="hero__aside--above-line w-full md:max-w-[30%]"
             >
               <p className="text-xs uppercase md:text-right">
                 From idea to production — interfaces, APIs, and systems that feel
@@ -63,11 +63,11 @@ const Hero = () => {
 
           <div className="hero-line w-full" aria-hidden />
 
-          <div className="flex flex-col gap-4 py-2 md:flex-row md:items-start md:justify-between md:gap-0">
+          <div className="hero__row flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-0">
             <RevealText
               direction="descend"
               delay={0.95}
-              className="w-full md:max-w-[15%]"
+              className="hero__aside--below-line w-full md:max-w-[15%]"
             >
               <p className="text-xs uppercase">
                 Front-end craft. Back-end clarity. End-to-end delivery.
