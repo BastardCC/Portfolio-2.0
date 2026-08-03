@@ -37,13 +37,13 @@ export const SERVICES: ServiceCategory[] = [
         items: ["Node.js", "TypeScript","Ruby"],
       },
       {
-        title: "Bases de données",
-        items: ["PostgreSQL", "MongoDB", "Supabase", "Prisma", "Convex"],
+        title: "Frameworks & Libraries",
+        items: ["Express", "NestJS", "Ruby on Rails"],
       },
       {
-        title: "API & Services",
-        items: ["REST", "Stripe", "Auth"],
-      },
+        title: "Database",
+        items: ["PostgreSQL", "MongoDB", "Supabase", "Prisma", "Convex"],
+      }
     ],
   },
   {
@@ -55,11 +55,11 @@ export const SERVICES: ServiceCategory[] = [
         items: ["GitHub Actions", "Vercel", "Netlify", "Docker"],
       },
       {
-        title: "Outils",
+        title: "Tools",
         items: ["n8n", "Webhooks"],
       },
       {
-        title: "Tests & Qualité",
+        title: "Tests & Quality",
         items: ["Vitest", "Jest", "ESLint"],
       },
     ],
