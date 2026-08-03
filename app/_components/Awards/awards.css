@@ -238,7 +238,7 @@
 }
 
 .awards-item {
-  --awards-item-curtain-duration: 0.4s;
+  --awards-item-curtain-duration: 0.3s;
 
   position: relative;
   display: block;

@@ -128,7 +128,7 @@
 }
 
 .contact__social {
-  --contact-social-curtain-duration: 0.4s;
+  --contact-social-curtain-duration: 0.3s;
   --contact-social-curtain-color: #7397b7;
 
   display: block;

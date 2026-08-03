@@ -2,8 +2,8 @@
   --transition-overlap: 100vh;
   --transition-overlap: 100dvh;
   --projects-curtain-buffer: 125dvh;
-  --curtain-scroll: calc(550vh + var(--projects-curtain-buffer));
-  --curtain-scroll: calc(550dvh + var(--projects-curtain-buffer));
+  --curtain-scroll: calc(380vh + var(--projects-curtain-buffer));
+  --curtain-scroll: calc(380dvh + var(--projects-curtain-buffer));
   --transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --curtain-seam: 2px;
   --awards-runway: calc(
@@ -57,7 +57,7 @@
   background: var(--foreground);
   backface-visibility: hidden;
   will-change: transform;
-  transition: transform 1.8s var(--transition-ease);
+  transition: transform 1s var(--transition-ease);
 }
 
 .transition-curtain--light {

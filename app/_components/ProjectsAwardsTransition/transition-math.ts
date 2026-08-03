@@ -6,8 +6,9 @@ export const CURTAIN_APPEAR_ZONE = 0.4;
 /**
  * Distance de scroll (en × viewport) pour progress 0→1.
  * Plus c’est haut, plus les rideaux (Awards + Services) sont lents.
+ * Garder synchronisé avec --curtain-scroll dans projects-awards-transition.css.
  */
-export const APPEAR_SCROLL_VIEWPORTS = 5.5;
+export const APPEAR_SCROLL_VIEWPORTS = 3.8;
 
 const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
 

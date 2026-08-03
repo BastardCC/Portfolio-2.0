@@ -104,7 +104,7 @@
 
 .hero-circle__asset--small {
   transform: translate(75vw, 70vh) scale(0.7);
-  animation: hero-circle-enter-small 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s
+  animation: hero-circle-enter-small 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s
     forwards;
 }
 
