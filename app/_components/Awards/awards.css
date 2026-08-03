@@ -327,6 +327,10 @@
 .awards-item__layer--in {
   color: var(--foreground);
   transform: translateY(-105%);
+  /* Masquée hors hover : sinon elle passe dans le clip pendant le reveal
+     (au-dessus de la couche out) et apparaît en noir sur fond noir. */
+  opacity: 0;
+  visibility: hidden;
 }
 
 .awards-item--hovered .awards-item__layer--out {
@@ -335,6 +339,8 @@
 
 .awards-item--hovered .awards-item__layer--in {
   transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (width >= 48rem) {
@@ -432,10 +438,14 @@
 
   .awards-item__layer--in {
     transform: translateY(-105%);
+    opacity: 0;
+    visibility: hidden;
   }
 
   .awards-item--hovered .awards-item__layer--in {
     transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
   }
 
   .awards__trophy {

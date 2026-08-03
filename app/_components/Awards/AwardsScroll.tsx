@@ -14,7 +14,7 @@ type AwardsScrollProps = {
   scrollActive?: boolean;
 };
 
-const LINE_LERP = 0.1;
+const LINE_LERP = 0.14;
 const TROPHY_APPEAR_LERP = 0.09;
 const SHADE_APPEAR_LERP = 0.065;
 const TROPHY_APPEAR_SCROLL_SPAN = 0.2;
@@ -38,8 +38,8 @@ const parseCssLength = (value: string, viewportHeight: number) => {
 
 const getLineTarget = (scrollProgress: number, index: number, count: number) => {
   const spread = 1 / count;
-  const start = index * spread * 0.7;
-  const duration = spread * 1.45;
+  const start = index * spread * 0.55;
+  const duration = spread * 1.05;
   const raw = (scrollProgress - start) / duration;
   const clamped = Math.max(0, Math.min(1, raw));
 

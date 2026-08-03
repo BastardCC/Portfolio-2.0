@@ -6,12 +6,12 @@ import { ServicesContactTransition } from "../ServicesContactTransition";
 import { SERVICES, SERVICES_DESCRIPTION } from "./services-data";
 import "./services.css";
 
-const LINE_LERP = 0.08;
+const LINE_LERP = 0.12;
 const TEXT_LERP = 0.06;
 const TEXT_REVEAL_START = 0.62;
 const TEXT_REVEAL_END = 1;
 /** Même en scroll rapide, le reveal Services dure au moins ça */
-const SERVICES_REVEAL_MIN_MS = 1800;
+const SERVICES_REVEAL_MIN_MS = 1400;
 /** Lignes assez avancées → ouverture de l’accordéon (un peu avant la fin) */
 const LINES_READY_THRESHOLD = 0.72;
 /** Début du reveal en escalier des titres */
@@ -24,10 +24,9 @@ const easeOutQuint = (value: number) => 1 - (1 - value) ** 5;
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
 const getLineTarget = (progress: number, index: number, count: number) => {
-  /* Une ligne après l’autre : peu de chevauchement */
   const slot = 1 / count;
-  const start = index * slot;
-  const duration = slot * 0.9;
+  const start = index * slot * 0.7;
+  const duration = slot * 0.7;
   const raw = (progress - start) / duration;
 
   return easeOutQuint(clamp01(raw));

@@ -24,20 +24,22 @@ const CONTACT_REVEAL_END_VIEWPORTS = 0.05;
 /** Contact visible dès ~20 % des rideaux (chevauchement avec l’anim rideaux) */
 const CONTACT_CURTAIN_REVEAL_START = 0.2;
 const CONTACT_CURTAIN_REVEAL_SPAN = 0.45;
-const CONTACT_REVEAL_LERP = 0.08;
+const CONTACT_REVEAL_LERP = 0.045;
 /**
  * Freinage fin de page (style Lenis / Akaru) :
  * scroll ralenti en continu — pas d’arrêt sec, même en scroll rapide.
  */
-const CONTACT_APPROACH_VIEWPORTS = 2.2;
-const CONTACT_APPROACH_SPEED_FAR = 0.24;
-const CONTACT_APPROACH_SPEED_NEAR = 0.09;
-const CONTACT_APPROACH_MAX_STEP = 10;
-const CONTACT_END_SOFTEN_VIEWPORTS = 2;
-const CONTACT_END_SPEED_START = 0.3;
-const CONTACT_END_SPEED_END = 0.07;
-const CONTACT_END_MAX_STEP = 4;
-const CONTACT_MAX_VELOCITY = 0.85;
+const CONTACT_APPROACH_VIEWPORTS = 3;
+const CONTACT_APPROACH_SPEED_FAR = 0.16;
+const CONTACT_APPROACH_SPEED_NEAR = 0.045;
+const CONTACT_APPROACH_MAX_STEP = 5.5;
+const CONTACT_END_SOFTEN_VIEWPORTS = 2.6;
+const CONTACT_END_SPEED_START = 0.18;
+const CONTACT_END_SPEED_END = 0.035;
+const CONTACT_END_MAX_STEP = 2.4;
+const CONTACT_MAX_VELOCITY = 0.42;
+const CONTACT_SOFT_LANDING_DURATION = 1.95;
+const CONTACT_SOFT_LANDING_AHEAD_MAX = 0.16;
 
 const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
 
@@ -162,13 +164,19 @@ const ServicesContactTransition = () => {
         const vh = window.innerHeight;
         const panelTop =
           contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+        const remaining = Math.max(0, lenis.limit - lenis.scroll);
         const ahead = Math.min(
           lenis.limit,
-          lenis.scroll + Math.min(vh * 0.12, Math.max(panelTop, vh * 0.06)),
+          lenis.scroll +
+            Math.min(
+              vh * CONTACT_SOFT_LANDING_AHEAD_MAX,
+              Math.max(panelTop * 0.32, vh * 0.06),
+              remaining,
+            ),
         );
 
         lenis.scrollTo(ahead, {
-          duration: 1.35,
+          duration: CONTACT_SOFT_LANDING_DURATION,
           easing: easeOutExpo,
           force: true,
           onComplete: () => {
