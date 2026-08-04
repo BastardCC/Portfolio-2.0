@@ -217,7 +217,8 @@ const ProjectCardAlt = ({
           src={image}
           alt={title}
           fill
-          sizes="(max-width: 48rem) 40vw, 12rem"
+          sizes="(max-width: 48rem) min(32vw, 12.5rem), min(20vw, 16rem)"
+          quality={90}
           className="project-card-alt__image"
         />
       </div>

@@ -30,8 +30,11 @@ const PIN_DRIFT_VIEWPORTS = 0.4;
  * scroll, puis retombe à zéro. Doit rester ≤ CURTAIN_START_BUFFER_VIEWPORTS.
  */
 const PIN_DRIFT_SCROLL_VIEWPORTS = PIN_DRIFT_VIEWPORTS * 3;
+/** Sous ce progress, Awards se détache (après la sortie animée) */
+const AWARDS_EXIT_PROGRESS = 0.14;
 
 const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
 type PinSnapshot = {
   startScroll: number;
@@ -47,10 +50,12 @@ const ProjectsAwardsTransition = () => {
   const pinSnapshotRef = useRef<PinSnapshot | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const awardsLatchedRef = useRef(false);
   const setTransitionReady = useSetTransitionReady();
   const [progress, setProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [awardsEngaged, setAwardsEngaged] = useState(false);
+  const [awardsExiting, setAwardsExiting] = useState(false);
 
   const appears = Array.from({ length: CURTAIN_COUNT }, (_, bottomIndex) =>
     getCurtainAppear(progress, bottomIndex),
@@ -74,8 +79,10 @@ const ProjectsAwardsTransition = () => {
 
     const releasePin = (pinTarget: HTMLElement | null) => {
       pinSnapshotRef.current = null;
+      awardsLatchedRef.current = false;
       setIsActive(false);
       setAwardsEngaged(false);
+      setAwardsExiting(false);
 
       if (spacerRef.current) {
         spacerRef.current.remove();
@@ -214,7 +221,29 @@ const ProjectsAwardsTransition = () => {
         pinTarget.style.visibility = "";
       }
 
-      setAwardsEngaged(ready);
+      /* Hystérésis : Awards reste accroché au scroll-up pour jouer la sortie */
+      if (ready) {
+        awardsLatchedRef.current = true;
+      } else if (curtainProgress < AWARDS_EXIT_PROGRESS) {
+        awardsLatchedRef.current = false;
+      }
+
+      const awardsActive = awardsLatchedRef.current;
+      const exiting = awardsActive && !ready;
+      const awardsFade = awardsActive
+        ? exiting
+          ? clamp01(
+              (curtainProgress - AWARDS_EXIT_PROGRESS) /
+                Math.max(0.22, 0.0001),
+            )
+          : 1
+        : 0;
+
+      setAwardsEngaged(awardsActive);
+      setAwardsExiting(exiting);
+      if (zone) {
+        zone.style.setProperty("--awards-flow-opacity", String(awardsFade));
+      }
 
       setProgress(curtainProgress);
       setTransitionReady(ready);
@@ -264,6 +293,7 @@ const ProjectsAwardsTransition = () => {
         className={[
           "transition-awards-flow",
           awardsEngaged ? "transition-awards-flow--visible" : "",
+          awardsExiting ? "transition-awards-flow--exiting" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -274,6 +304,7 @@ const ProjectsAwardsTransition = () => {
             description={AWARDS_DESCRIPTION}
             onCurtains
             scrollActive={awardsEngaged}
+            exiting={awardsExiting}
           />
         </section>
       </div>

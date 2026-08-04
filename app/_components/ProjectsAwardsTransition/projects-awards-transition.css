@@ -72,13 +72,22 @@
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.55s var(--transition-ease);
+  transition:
+    opacity 0.7s var(--transition-ease),
+    visibility 0s linear 0.7s;
 }
 
 .transition-awards-flow--visible {
   pointer-events: auto;
-  opacity: 1;
+  opacity: var(--awards-flow-opacity, 1);
   visibility: visible;
+  transition:
+    opacity 0.55s var(--transition-ease),
+    visibility 0s linear 0s;
+}
+
+.transition-awards-flow--exiting {
+  pointer-events: none;
 }
 
 .transition-awards-flow .awards,

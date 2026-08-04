@@ -12,9 +12,12 @@ type AwardsScrollProps = {
   description: string;
   onCurtains?: boolean;
   scrollActive?: boolean;
+  /** Sortie animée (scroll-up) : ramène lignes / contenu / trophée à 0 */
+  exiting?: boolean;
 };
 
 const LINE_LERP = 0.14;
+const LINE_EXIT_LERP = 0.18;
 const TROPHY_APPEAR_LERP = 0.09;
 const SHADE_APPEAR_LERP = 0.065;
 const TROPHY_APPEAR_SCROLL_SPAN = 0.2;
@@ -51,6 +54,7 @@ const AwardsScroll = ({
   description,
   onCurtains = false,
   scrollActive = true,
+  exiting = false,
 }: AwardsScrollProps) => {
   const zoneRef = useRef<HTMLDivElement>(null);
   const scrollProgressRef = useRef(0);
@@ -60,6 +64,8 @@ const AwardsScroll = ({
   const trophyAppearRef = useRef(0);
   const shadeAppearRef = useRef(0);
   const shadeRef = useRef<HTMLDivElement>(null);
+  const exitingRef = useRef(exiting);
+  exitingRef.current = exiting;
   const lineCount = awards.length + 1;
   const targetRef = useRef<number[]>(new Array(lineCount).fill(0));
   const currentRef = useRef<number[]>(new Array(lineCount).fill(0));
@@ -71,6 +77,7 @@ const AwardsScroll = ({
   );
   const [contentVisible, setContentVisible] = useState(false);
   const [introActive, setIntroActive] = useState(false);
+  const [introShown, setIntroShown] = useState(false);
 
   useEffect(() => {
     const zone = zoneRef.current;
@@ -139,6 +146,13 @@ const AwardsScroll = ({
     };
 
     const updateTargets = () => {
+      if (exitingRef.current) {
+        animationProgressRef.current = 0;
+        scrollProgressRef.current = 0;
+        targetRef.current = new Array(lineCount).fill(0);
+        return;
+      }
+
       const { animationProgress, scrollProgress } = measureScrollMetrics();
       scrollProgressRef.current = scrollProgress;
       animationProgressRef.current = animationProgress;
@@ -167,10 +181,12 @@ const AwardsScroll = ({
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
+      const isExiting = exitingRef.current;
+      const lineLerp = isExiting ? LINE_EXIT_LERP : LINE_LERP;
 
       if (reducedMotion) {
-        currentRef.current = new Array(lineCount).fill(1);
-        setLineProgress(new Array(lineCount).fill(1));
+        currentRef.current = new Array(lineCount).fill(isExiting ? 0 : 1);
+        setLineProgress(new Array(lineCount).fill(isExiting ? 0 : 1));
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
@@ -179,7 +195,7 @@ const AwardsScroll = ({
       const target = targetRef.current;
 
       for (let index = 0; index < lineCount; index += 1) {
-        current[index] += (target[index] - current[index]) * LINE_LERP;
+        current[index] += (target[index] - current[index]) * lineLerp;
       }
 
       const { emit, now } = shouldEmitVisualFrame(visualEmitRef.current);
@@ -188,25 +204,33 @@ const AwardsScroll = ({
         visualEmitRef.current = now;
         setLineProgress([...current]);
         setContentVisible(
-          animationProgressRef.current >= CONTENT_VISIBLE_THRESHOLD,
+          !isExiting &&
+            animationProgressRef.current >= CONTENT_VISIBLE_THRESHOLD,
         );
-        setIntroActive(
-          onCurtains
+        const nextIntro =
+          !isExiting &&
+          (onCurtains
             ? animationProgressRef.current > 0.04
-            : animationProgressRef.current > 0.02,
-        );
+            : animationProgressRef.current > 0.02);
+        setIntroActive(nextIntro);
+        if (nextIntro) setIntroShown(true);
       }
 
       if (onCurtains) {
-        const trophyTarget = Math.min(
-          1,
-          animationProgressRef.current / TROPHY_APPEAR_SCROLL_SPAN,
-        );
+        const trophyTarget = isExiting
+          ? 0
+          : Math.min(
+              1,
+              animationProgressRef.current / TROPHY_APPEAR_SCROLL_SPAN,
+            );
+        const trophyLerp = isExiting ? LINE_EXIT_LERP : TROPHY_APPEAR_LERP;
+        const shadeLerp = isExiting ? LINE_EXIT_LERP : SHADE_APPEAR_LERP;
+
         trophyAppearRef.current +=
-          (trophyTarget - trophyAppearRef.current) * TROPHY_APPEAR_LERP;
+          (trophyTarget - trophyAppearRef.current) * trophyLerp;
 
         shadeAppearRef.current +=
-          (trophyAppearRef.current - shadeAppearRef.current) * SHADE_APPEAR_LERP;
+          (trophyAppearRef.current - shadeAppearRef.current) * shadeLerp;
 
         if (shadeRef.current) {
           shadeRef.current.style.opacity = String(shadeAppearRef.current);
@@ -233,17 +257,32 @@ const AwardsScroll = ({
   }, [awards, scrollActive, onCurtains]);
 
   useEffect(() => {
-    if (!scrollActive) {
-      setIntroActive(false);
-      scrollYAtActiveRef.current = 0;
-      scrollYAtActiveSetRef.current = false;
-      trophyAppearRef.current = 0;
-      shadeAppearRef.current = 0;
-      if (shadeRef.current) {
-        shadeRef.current.style.opacity = "0";
-      }
+    if (!scrollActive || !exiting) return;
+
+    animationProgressRef.current = 0;
+    scrollProgressRef.current = 0;
+    targetRef.current = new Array(lineCount).fill(0);
+    setContentVisible(false);
+    setIntroActive(false);
+  }, [exiting, scrollActive, lineCount]);
+
+  useEffect(() => {
+    if (scrollActive) return;
+
+    setIntroActive(false);
+    setIntroShown(false);
+    setContentVisible(false);
+    setLineProgress(new Array(lineCount).fill(0));
+    currentRef.current = new Array(lineCount).fill(0);
+    targetRef.current = new Array(lineCount).fill(0);
+    scrollYAtActiveRef.current = 0;
+    scrollYAtActiveSetRef.current = false;
+    trophyAppearRef.current = 0;
+    shadeAppearRef.current = 0;
+    if (shadeRef.current) {
+      shadeRef.current.style.opacity = "0";
     }
-  }, [scrollActive]);
+  }, [scrollActive, lineCount]);
 
   return (
     <div
@@ -251,6 +290,7 @@ const AwardsScroll = ({
       className={[
         "awards__scroll-zone",
         onCurtains ? "awards__scroll-zone--on-curtains" : "",
+        exiting ? "awards__scroll-zone--exiting" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -279,8 +319,15 @@ const AwardsScroll = ({
         <div className="container awards__stage">
           <div className="awards__layout">
             <div className="awards__panel awards__panel--intro">
-              <div className="awards__intro">
-                {introActive ? (
+              <div
+                className={[
+                  "awards__intro",
+                  introActive ? "awards__intro--visible" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {introShown ? (
                   <>
                     <RevealText triggerOnScroll={false} duration={1.2}>
                       <h2 className="awards__title">Awards</h2>
