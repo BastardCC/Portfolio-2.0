@@ -1,9 +1,11 @@
 .services-contact-transition-zone {
   /* Temps de lecture Services avant le démarrage des rideaux */
   --contact-buffer: 275dvh;
+  /* Course rideaux plus longue que Projects → Awards */
+  --services-curtain-scroll: 660dvh;
   /* Contact entre dans le flux vers ~28 % de la course des rideaux */
   --contact-start: calc(
-    var(--contact-buffer) + var(--curtain-scroll) * 0.28
+    var(--contact-buffer) + var(--services-curtain-scroll) * 0.28
   );
   /*
     Pas de hold supplémentaire : évite le « reste de scroll » visible en bas

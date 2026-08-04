@@ -1,7 +1,7 @@
 .transition-zone {
   --transition-overlap: 100vh;
   --transition-overlap: 100dvh;
-  --projects-curtain-buffer: 125dvh;
+  --projects-curtain-buffer: 55dvh;
   --curtain-scroll: calc(380vh + var(--projects-curtain-buffer));
   --curtain-scroll: calc(380dvh + var(--projects-curtain-buffer));
   --transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -19,7 +19,7 @@
       var(--awards-enter-ratio)
   );
   /* Laisse Awards + rideaux quitter le viewport avant Services */
-  --awards-exit-hold: 130dvh;
+  --awards-exit-hold: 100dvh;
 
   position: relative;
   z-index: 25;
@@ -77,6 +77,7 @@
 
 .transition-curtain--light {
   background: var(--background);
+  transition-duration: 1.4s;
 }
 
 .transition-awards-flow {

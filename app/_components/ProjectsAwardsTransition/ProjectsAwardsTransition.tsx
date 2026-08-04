@@ -17,43 +17,35 @@ import "./projects-awards-transition.css";
 
 const PIN_TARGET_SELECTOR = ".projects-pin-target";
 const ANCHOR_SELECTOR = ".projects__transition-anchor";
+const SOFT_END_MARK_SELECTOR = ".projects__soft-end-mark";
 const PIN_SPACER_CLASS = "projects-pin-spacer";
-const SERVICES_TARGET_SELECTOR = ".services-pin-target";
-/** Scroll libre après le pin avant que les rideaux ne commencent */
-const CURTAIN_START_BUFFER_VIEWPORTS = 1.25;
+/** Petite pause après le pin pour voir les derniers projets avant les rideaux */
+const CURTAIN_START_BUFFER_VIEWPORTS = 0.55;
+/** Tolérance avant de relâcher le pin (évite le flicker Lenis) */
+const PIN_RELEASE_HYSTERESIS_PX = 48;
+/** Anticipation max du pin selon la vitesse de scroll (px) */
+const PIN_VELOCITY_LEAD_MAX_PX = 140;
+const PIN_VELOCITY_LEAD_FACTOR = 90;
 /**
- * Réserve de scroll interne gardée au moment du pin : le contenu continue de
- * glisser sur cette distance au lieu de se figer net.
+ * Freinage + soft-snap vers la fin des projets
+ * (tout près de l’ancre de fin).
  */
-const PIN_DRIFT_VIEWPORTS = 0.4;
-/**
- * Course de scroll qui absorbe ce glissement. Le facteur 3 est la pente à
- * l'origine de easeOutCubic : le contenu démarre exactement à la vitesse du
- * scroll, puis retombe à zéro. Doit rester ≤ CURTAIN_START_BUFFER_VIEWPORTS.
- */
-const PIN_DRIFT_SCROLL_VIEWPORTS = PIN_DRIFT_VIEWPORTS * 3;
-/**
- * Freinage + snap Awards → Services :
- * un scroll vers le bas amène la section Services entière (100dvh) en haut.
- */
-const SERVICES_APPROACH_VIEWPORTS = 2.6;
-const SERVICES_APPROACH_SPEED_FAR = 0.22;
-const SERVICES_APPROACH_SPEED_NEAR = 0.07;
-const SERVICES_APPROACH_MAX_STEP = 6.5;
-const SERVICES_SNAP_TRIGGER = 0.78;
-const SERVICES_SNAP_DURATION = 1.2;
+const PROJECTS_END_APPROACH_VIEWPORTS = 1.15;
+const PROJECTS_END_SPEED_FAR = 0.55;
+const PROJECTS_END_SPEED_NEAR = 0.16;
+const PROJECTS_END_MAX_STEP = 6.5;
+/** Marque proche du haut du viewport → on force la fin */
+const PROJECTS_END_MARK_TRIGGER = 0.35;
+const PROJECTS_END_SNAP_DISTANCE_VIEWPORTS = 0.7;
+const PROJECTS_END_SOFT_DURATION = 1.15;
 
-const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
-const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
 
 type PinSnapshot = {
   startScroll: number;
-  top: number;
-  left: number;
-  width: number;
   height: number;
-  drift: number;
+  startScrollTop: number;
 };
 
 const ProjectsAwardsTransition = () => {
@@ -74,40 +66,45 @@ const ProjectsAwardsTransition = () => {
     getCurtainAppear(progress, bottomIndex),
   );
 
-  /* Ralentissement + snap plein écran vers Services */
+  /* Freinage + soft-snap : marque grille → fin des projets */
   useEffect(() => {
     if (!lenis) return;
 
     let softLanding = false;
     let hasSnapped = false;
 
-    const getServicesEl = () =>
-      document.querySelector<HTMLElement>(SERVICES_TARGET_SELECTOR);
+    const getAnchor = () =>
+      document.querySelector<HTMLElement>(ANCHOR_SELECTOR);
 
-    const getServicesTop = () =>
-      getServicesEl()?.getBoundingClientRect().top ?? Infinity;
+    const getMark = () =>
+      document.querySelector<HTMLElement>(SOFT_END_MARK_SELECTOR);
 
-    const inSlowZone = () => {
-      const vh = window.innerHeight;
-      const zoneBottom =
-        zoneRef.current?.getBoundingClientRect().bottom ?? Infinity;
-      const servicesTop = getServicesTop();
-      const nearServices = servicesTop < vh * SERVICES_APPROACH_VIEWPORTS;
-      const leavingAwards =
-        zoneBottom < vh * 1.35 && zoneBottom > -vh * 0.15;
-      return nearServices || leavingAwards;
+    const getDistanceToEnd = () => {
+      const anchor = getAnchor();
+      if (!anchor) return Infinity;
+      return anchor.getBoundingClientRect().bottom - window.innerHeight;
     };
 
-    const snapToServices = () => {
-      const el = getServicesEl();
-      if (!el || softLanding) return;
+    const inApproachZone = () => {
+      const vh = window.innerHeight;
+      const distance = getDistanceToEnd();
+      const markTop = getMark()?.getBoundingClientRect().top ?? Infinity;
+      return (
+        distance < vh * PROJECTS_END_APPROACH_VIEWPORTS && distance > -8
+      ) || markTop < vh * 0.92;
+    };
+
+    const snapToProjectsEnd = () => {
+      if (softLanding || pinSnapshotRef.current) return;
+
+      const distance = getDistanceToEnd();
+      if (!Number.isFinite(distance) || distance <= 2) return;
 
       softLanding = true;
       hasSnapped = true;
 
-      lenis.scrollTo(el, {
-        offset: 0,
-        duration: SERVICES_SNAP_DURATION,
+      lenis.scrollTo(lenis.scroll + distance, {
+        duration: PROJECTS_END_SOFT_DURATION,
         easing: easeOutExpo,
         force: true,
         onComplete: () => {
@@ -125,37 +122,44 @@ const ProjectsAwardsTransition = () => {
         return;
       }
 
-      if (!inSlowZone()) return;
+      if (pinSnapshotRef.current) return;
+      if (!inApproachZone()) return;
 
       const vh = window.innerHeight;
-      const servicesTop = getServicesTop();
-
-      /* Un scroll bas suffit : on aligne toute la section Services */
-      if (
+      const distance = getDistanceToEnd();
+      const markTop = getMark()?.getBoundingClientRect().top ?? Infinity;
+      const shouldSnap =
         !hasSnapped &&
         !softLanding &&
-        servicesTop < vh * SERVICES_SNAP_TRIGGER &&
-        servicesTop > 10
-      ) {
+        (markTop < vh * PROJECTS_END_MARK_TRIGGER ||
+          distance < vh * PROJECTS_END_SNAP_DISTANCE_VIEWPORTS);
+
+      if (shouldSnap && distance > 2) {
         data.deltaY = 0;
-        snapToServices();
+        snapToProjectsEnd();
         return;
       }
 
-      const approachZone = vh * SERVICES_APPROACH_VIEWPORTS;
-      const t = clamp01(servicesTop / Math.max(approachZone, 1));
-      const speed =
-        SERVICES_APPROACH_SPEED_NEAR +
-        (SERVICES_APPROACH_SPEED_FAR - SERVICES_APPROACH_SPEED_NEAR) * t;
+      if (softLanding) {
+        data.deltaY = 0;
+        return;
+      }
 
-      data.deltaY = Math.min(data.deltaY * speed, SERVICES_APPROACH_MAX_STEP);
+      const zone = vh * PROJECTS_END_APPROACH_VIEWPORTS;
+      const t = clamp01(distance / Math.max(zone, 1));
+      const speed =
+        PROJECTS_END_SPEED_NEAR +
+        (PROJECTS_END_SPEED_FAR - PROJECTS_END_SPEED_NEAR) * t;
+
+      data.deltaY = Math.min(data.deltaY * speed, PROJECTS_END_MAX_STEP);
     };
 
     const onScroll = () => {
       const vh = window.innerHeight;
-      const servicesTop = getServicesTop();
+      const markTop = getMark()?.getBoundingClientRect().top ?? Infinity;
+      const distance = getDistanceToEnd();
 
-      if (servicesTop > vh * 1.15) {
+      if (markTop > vh * 1.05 && distance > vh * PROJECTS_END_APPROACH_VIEWPORTS) {
         hasSnapped = false;
       }
 
@@ -164,14 +168,15 @@ const ProjectsAwardsTransition = () => {
         return;
       }
 
+      if (pinSnapshotRef.current || softLanding || hasSnapped) return;
+
       if (
-        !hasSnapped &&
-        !softLanding &&
-        lenis.velocity > 0.08 &&
-        servicesTop < vh * SERVICES_SNAP_TRIGGER &&
-        servicesTop > 10
+        (markTop < vh * PROJECTS_END_MARK_TRIGGER ||
+          distance < vh * PROJECTS_END_SNAP_DISTANCE_VIEWPORTS) &&
+        distance > 2 &&
+        lenis.velocity > 0.05
       ) {
-        snapToServices();
+        snapToProjectsEnd();
       }
     };
 
@@ -219,22 +224,18 @@ const ProjectsAwardsTransition = () => {
       pinTarget.classList.remove("projects-pin-target--pinned");
     };
 
-    const engagePin = (
-      pinTarget: HTMLElement,
-      scrollY: number,
-      drift: number,
-    ) => {
+    const engagePin = (pinTarget: HTMLElement, scrollY: number) => {
       const rect = pinTarget.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const fullHeight = pinTarget.offsetHeight;
+      const maxScrollTop = Math.max(0, fullHeight - viewportHeight);
+      /* Sync exact avec l’écran — pas de saut vers le bas */
+      const startScrollTop = Math.min(maxScrollTop, Math.max(0, -rect.top));
 
       pinSnapshotRef.current = {
         startScroll: scrollY,
-        top: 0,
-        left: rect.left,
-        width: rect.width,
         height: fullHeight,
-        drift,
+        startScrollTop,
       };
 
       const spacer = document.createElement("div");
@@ -244,11 +245,6 @@ const ProjectsAwardsTransition = () => {
       pinTarget.parentNode?.insertBefore(spacer, pinTarget);
       spacerRef.current = spacer;
 
-      /*
-        Contenu plus haut que le viewport : on pin en 100dvh
-        et on scrolle l’intérieur jusqu’en bas (dernières cards visibles).
-        Évite top négatif → trou blanc pendant les rideaux.
-      */
       pinTarget.style.position = "fixed";
       pinTarget.style.top = "0";
       pinTarget.style.left = `${rect.left}px`;
@@ -257,7 +253,7 @@ const ProjectsAwardsTransition = () => {
       pinTarget.style.overflow = "hidden";
       pinTarget.style.zIndex = "10";
       pinTarget.classList.add("projects-pin-target--pinned");
-      pinTarget.scrollTop = Math.max(0, fullHeight - viewportHeight - drift);
+      pinTarget.scrollTop = startScrollTop;
       setIsActive(true);
     };
 
@@ -286,23 +282,24 @@ const ProjectsAwardsTransition = () => {
 
       const snapshot = pinSnapshotRef.current;
 
-      if (snapshot && scrollY < snapshot.startScroll - 1) {
+      /*
+        Relâche seulement sur une vraie remontée — une petite correction
+        Lenis au moment du pin ne doit pas tout démonter.
+      */
+      if (snapshot && scrollY < snapshot.startScroll - PIN_RELEASE_HYSTERESIS_PX) {
         releasePin(pinTarget);
         setProgress(0);
         setTransitionReady(false);
         return;
       }
 
-      /* On accroche avant que le contenu ne touche le bas du viewport pour
-         garder de quoi le laisser glisser en douceur. */
-      const pinFullHeight = snapshot?.height ?? pinTarget?.offsetHeight ?? 0;
-      const pinDrift = Math.min(
-        Math.max(0, pinFullHeight - viewportHeight),
-        viewportHeight * PIN_DRIFT_VIEWPORTS,
+      const velocity = Math.max(0, lenis?.velocity ?? 0);
+      const engageLead = Math.min(
+        PIN_VELOCITY_LEAD_MAX_PX,
+        velocity * PIN_VELOCITY_LEAD_FACTOR,
       );
 
-      if (!snapshot && anchorBottom > viewportHeight + pinDrift + 0.5) {
-        releasePin(pinTarget);
+      if (!snapshot && anchorBottom > viewportHeight + engageLead + 0.5) {
         setProgress(0);
         setTransitionReady(false);
         return;
@@ -311,40 +308,26 @@ const ProjectsAwardsTransition = () => {
       if (!pinTarget) return;
 
       if (!snapshot) {
-        engagePin(pinTarget, scrollY, pinDrift);
+        engagePin(pinTarget, scrollY);
       }
 
       const activeSnapshot = pinSnapshotRef.current;
       if (!activeSnapshot) return;
 
       const scrolled = Math.max(0, scrollY - activeSnapshot.startScroll);
-
-      const driftRunway = viewportHeight * PIN_DRIFT_SCROLL_VIEWPORTS;
-      const driftProgress =
-        driftRunway > 0 ? Math.min(1, scrolled / driftRunway) : 1;
       const maxScrollTop = Math.max(0, activeSnapshot.height - viewportHeight);
-
-      pinTarget.scrollTop =
-        maxScrollTop - activeSnapshot.drift * (1 - easeOutCubic(driftProgress));
+      /* Suite 1:1 du scroll page jusqu’en bas — vitesse normale, pas d’ease */
+      pinTarget.scrollTop = Math.min(
+        maxScrollTop,
+        activeSnapshot.startScrollTop + scrolled,
+      );
 
       const bufferPx = viewportHeight * CURTAIN_START_BUFFER_VIEWPORTS;
-      const effectiveScrolled = Math.max(0, scrolled - bufferPx);
       const curtainProgress = Math.min(
-        effectiveScrolled / appearScrollDistance,
+        Math.max(0, scrolled - bufferPx) / appearScrollDistance,
         1,
       );
       const ready = areCurtainsComplete(curtainProgress);
-      const projectsFade = Math.max(
-        0,
-        Math.min(1, (curtainProgress - 0.55) / 0.35),
-      );
-
-      pinTarget.style.opacity = String(Math.max(0, 1 - projectsFade));
-      if (ready) {
-        pinTarget.style.visibility = "hidden";
-      } else {
-        pinTarget.style.visibility = "";
-      }
 
       /*
         Awards monte dans le flux (sticky) pendant les rideaux.
@@ -360,6 +343,26 @@ const ProjectsAwardsTransition = () => {
         awardsScrollLatchedRef.current = true;
       } else if (panelTop > viewportHeight * 0.92) {
         awardsScrollLatchedRef.current = false;
+      }
+
+      /*
+        Garder le fond projets derrière les rideaux jusqu’à ce qu’Awards
+        couvre l’écran. Sinon visibility:hidden dès ready (~32 %) laisse
+        voir le fond crème vide avant l’arrivée d’Awards (~50 %).
+      */
+      const awardsCover =
+        awardsStuck ||
+        awardsScrollLatchedRef.current ||
+        (awardsRising && panelTop < viewportHeight * 0.35);
+      const projectsFade = awardsCover
+        ? clamp01((viewportHeight * 0.45 - panelTop) / (viewportHeight * 0.35))
+        : 0;
+
+      pinTarget.style.opacity = String(Math.max(0, 1 - projectsFade));
+      if (awardsCover && (awardsStuck || projectsFade >= 0.95)) {
+        pinTarget.style.visibility = "hidden";
+      } else {
+        pinTarget.style.visibility = "";
       }
 
       setAwardsFlowActive(awardsRising || awardsScrollLatchedRef.current);
@@ -391,7 +394,7 @@ const ProjectsAwardsTransition = () => {
 
       releasePin(document.querySelector<HTMLElement>(PIN_TARGET_SELECTOR));
     };
-  }, [setTransitionReady]);
+  }, [lenis, setTransitionReady]);
 
   return (
     <div

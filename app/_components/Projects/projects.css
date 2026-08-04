@@ -187,7 +187,8 @@
 }
 
 .projects-grid__transition-anchor,
-.projects__transition-anchor {
+.projects__transition-anchor,
+.projects__soft-end-mark {
   position: relative;
   width: 100%;
   height: 0;

@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import Contact from "../Contact";
 import TransitionCurtains from "../ProjectsAwardsTransition/TransitionCurtains";
 import {
-  APPEAR_SCROLL_VIEWPORTS,
   CURTAIN_COUNT,
   getCurtainAppear,
 } from "../ProjectsAwardsTransition/transition-math";
@@ -17,29 +16,34 @@ const PIN_TARGET_SELECTOR = ".services-pin-target";
 const ANCHOR_SELECTOR = ".services__transition-anchor";
 const PIN_SPACER_CLASS = "services-pin-spacer";
 const CURTAIN_START_BUFFER_VIEWPORTS = 2.75;
+/**
+ * Course des rideaux Services → Contact (plus longue que Projects → Awards).
+ * Garder sync avec --services-curtain-scroll dans le CSS.
+ */
+const CONTACT_APPEAR_SCROLL_VIEWPORTS = 6.6;
 /** Début du reveal : panel encore sous le viewport */
-const CONTACT_REVEAL_START_VIEWPORTS = 1.8;
+const CONTACT_REVEAL_START_VIEWPORTS = 2.3;
 /** Fin du reveal : dès que Contact est collé en haut */
 const CONTACT_REVEAL_END_VIEWPORTS = 0.05;
-/** Contact visible dès ~20 % des rideaux (chevauchement avec l’anim rideaux) */
-const CONTACT_CURTAIN_REVEAL_START = 0.2;
-const CONTACT_CURTAIN_REVEAL_SPAN = 0.45;
-const CONTACT_REVEAL_LERP = 0.045;
+/** Contact visible un peu plus tard dans la course des rideaux */
+const CONTACT_CURTAIN_REVEAL_START = 0.3;
+const CONTACT_CURTAIN_REVEAL_SPAN = 0.52;
+const CONTACT_REVEAL_LERP = 0.016;
 /**
  * Freinage fin de page (style Lenis / Akaru) :
  * scroll ralenti en continu — pas d’arrêt sec, même en scroll rapide.
  */
-const CONTACT_APPROACH_VIEWPORTS = 3;
-const CONTACT_APPROACH_SPEED_FAR = 0.16;
-const CONTACT_APPROACH_SPEED_NEAR = 0.045;
-const CONTACT_APPROACH_MAX_STEP = 5.5;
-const CONTACT_END_SOFTEN_VIEWPORTS = 2.6;
-const CONTACT_END_SPEED_START = 0.18;
-const CONTACT_END_SPEED_END = 0.035;
-const CONTACT_END_MAX_STEP = 2.4;
-const CONTACT_MAX_VELOCITY = 0.42;
-const CONTACT_SOFT_LANDING_DURATION = 1.95;
-const CONTACT_SOFT_LANDING_AHEAD_MAX = 0.16;
+const CONTACT_APPROACH_VIEWPORTS = 4.6;
+const CONTACT_APPROACH_SPEED_FAR = 0.075;
+const CONTACT_APPROACH_SPEED_NEAR = 0.018;
+const CONTACT_APPROACH_MAX_STEP = 2.2;
+const CONTACT_END_SOFTEN_VIEWPORTS = 3.4;
+const CONTACT_END_SPEED_START = 0.085;
+const CONTACT_END_SPEED_END = 0.015;
+const CONTACT_END_MAX_STEP = 1.15;
+const CONTACT_MAX_VELOCITY = 0.2;
+const CONTACT_SOFT_LANDING_DURATION = 3.15;
+const CONTACT_SNAP_TRIGGER = 0.55;
 
 const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
 
@@ -95,16 +99,37 @@ const ServicesContactTransition = () => {
     if (!lenis) return;
 
     let softLanding = false;
+    let hasSnapped = false;
+
+    const getPanelTop = () =>
+      contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
 
     const inSlowZone = () => {
       const vh = window.innerHeight;
       const remaining = Math.max(0, lenis.limit - lenis.scroll);
-      const panelTop =
-        contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+      const panelTop = getPanelTop();
       const settled = contactActiveRef.current && panelTop <= 12;
       const approaching = panelTop < vh * CONTACT_APPROACH_VIEWPORTS;
       const nearEnd = remaining < vh * CONTACT_END_SOFTEN_VIEWPORTS;
       return approaching || settled || nearEnd;
+    };
+
+    const snapToContact = () => {
+      const panel = contactPanelRef.current;
+      if (!panel || softLanding) return;
+
+      softLanding = true;
+      hasSnapped = true;
+
+      lenis.scrollTo(panel, {
+        offset: 0,
+        duration: CONTACT_SOFT_LANDING_DURATION,
+        easing: easeOutExpo,
+        force: true,
+        onComplete: () => {
+          softLanding = false;
+        },
+      });
     };
 
     const onVirtualScroll = (data: { deltaY: number }) => {
@@ -122,9 +147,21 @@ const ServicesContactTransition = () => {
       const remaining = Math.max(0, lenis.limit - lenis.scroll);
       const endZone = vh * CONTACT_END_SOFTEN_VIEWPORTS;
       const approachZone = vh * CONTACT_APPROACH_VIEWPORTS;
-      const panelTop =
-        contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+      const panelTop = getPanelTop();
       const settled = contactActiveRef.current && panelTop <= 12;
+
+      /* Un scroll contrôlé pour coller Contact en haut, sans overshoot */
+      if (
+        !hasSnapped &&
+        !softLanding &&
+        !settled &&
+        panelTop < vh * CONTACT_SNAP_TRIGGER &&
+        panelTop > 10
+      ) {
+        data.deltaY = 0;
+        snapToContact();
+        return;
+      }
 
       let speed: number;
       let maxStep: number;
@@ -142,7 +179,7 @@ const ServicesContactTransition = () => {
           (CONTACT_END_SPEED_START - CONTACT_END_SPEED_END) * t;
         maxStep = Math.min(
           CONTACT_END_MAX_STEP,
-          Math.max(remaining * 0.05, 1.5),
+          Math.max(remaining * 0.04, 1),
         );
       }
 
@@ -150,7 +187,13 @@ const ServicesContactTransition = () => {
     };
 
     const onScroll = () => {
+      const vh = window.innerHeight;
+      const panelTop = getPanelTop();
       const velocity = lenis.velocity;
+
+      if (panelTop > vh * 1.2) {
+        hasSnapped = false;
+      }
 
       if (velocity < -0.05) {
         softLanding = false;
@@ -159,20 +202,23 @@ const ServicesContactTransition = () => {
 
       if (!inSlowZone() || softLanding) return;
 
+      if (
+        !hasSnapped &&
+        panelTop < vh * CONTACT_SNAP_TRIGGER &&
+        panelTop > 10 &&
+        velocity > 0.06
+      ) {
+        snapToContact();
+        return;
+      }
+
       if (velocity > CONTACT_MAX_VELOCITY) {
         softLanding = true;
-        const vh = window.innerHeight;
-        const panelTop =
-          contactPanelRef.current?.getBoundingClientRect().top ?? Infinity;
         const remaining = Math.max(0, lenis.limit - lenis.scroll);
         const ahead = Math.min(
           lenis.limit,
           lenis.scroll +
-            Math.min(
-              vh * CONTACT_SOFT_LANDING_AHEAD_MAX,
-              Math.max(panelTop * 0.32, vh * 0.06),
-              remaining,
-            ),
+            Math.min(vh * 0.1, Math.max(panelTop * 0.22, vh * 0.04), remaining),
         );
 
         lenis.scrollTo(ahead, {
@@ -230,6 +276,8 @@ const ServicesContactTransition = () => {
 
       clearPinStyles(pinTarget);
       pinTarget.style.opacity = "";
+      pinTarget.style.visibility = "";
+      pinTarget.style.pointerEvents = "";
       pinTarget.classList.remove("services-pin-target--pinned");
     };
 
@@ -317,7 +365,7 @@ const ServicesContactTransition = () => {
       const pinTarget = document.querySelector<HTMLElement>(PIN_TARGET_SELECTOR);
       const anchor = document.querySelector<HTMLElement>(ANCHOR_SELECTOR);
       const anchorBottom = anchor?.getBoundingClientRect().bottom ?? Infinity;
-      const appearScrollDistance = viewportHeight * APPEAR_SCROLL_VIEWPORTS;
+      const appearScrollDistance = viewportHeight * CONTACT_APPEAR_SCROLL_VIEWPORTS;
       const bufferPx = viewportHeight * CURTAIN_START_BUFFER_VIEWPORTS;
 
       const reducedMotion = window.matchMedia(
@@ -374,12 +422,24 @@ const ServicesContactTransition = () => {
 
       const effectiveScrolled = Math.max(0, scrolled - bufferPx);
       const curtainProgress = Math.min(effectiveScrolled / appearScrollDistance, 1);
+      /* Fade tôt : le Contact semi-transparent sinon laisse fuiter le texte blanc */
       const servicesFade = Math.max(
         0,
-        Math.min(1, (curtainProgress - 0.55) / 0.35),
+        Math.min(1, (curtainProgress - 0.12) / 0.38),
       );
+      const contactBoost = clamp01(
+        (revealCurrentRef.current - 0.02) / 0.28,
+      );
+      const fade = Math.max(servicesFade, contactBoost);
 
-      pinTarget.style.opacity = String(Math.max(0, 1 - servicesFade));
+      pinTarget.style.opacity = String(Math.max(0, 1 - fade));
+      if (fade >= 0.92 || revealCurrentRef.current >= 0.55) {
+        pinTarget.style.visibility = "hidden";
+        pinTarget.style.pointerEvents = "none";
+      } else {
+        pinTarget.style.visibility = "";
+        pinTarget.style.pointerEvents = "";
+      }
       setProgress(curtainProgress);
       updateContactRevealTarget();
 

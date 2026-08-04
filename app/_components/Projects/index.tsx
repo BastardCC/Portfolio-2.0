@@ -23,6 +23,8 @@ const Projects = () => {
         <ProjectsGrid projects={PROJECTS} />
         <ProjectsListAlt projects={PROJECTS} />
 
+        {/* Déclenche le freinage + soft-snap tout près de la fin */}
+        <div className="projects__soft-end-mark" aria-hidden />
         {/* Ancre après TOUT le contenu projets — sinon le rideau coupe la liste alt */}
         <div className="projects__transition-anchor" aria-hidden />
       </div>
