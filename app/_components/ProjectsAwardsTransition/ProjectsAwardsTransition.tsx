@@ -1,5 +1,6 @@
 "use client";
 
+import { useLenis } from "lenis/react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import AwardsScroll from "../Awards/AwardsScroll";
 import { AWARDS, AWARDS_DESCRIPTION } from "../Awards/awards-data";
@@ -17,6 +18,7 @@ import "./projects-awards-transition.css";
 const PIN_TARGET_SELECTOR = ".projects-pin-target";
 const ANCHOR_SELECTOR = ".projects__transition-anchor";
 const PIN_SPACER_CLASS = "projects-pin-spacer";
+const SERVICES_TARGET_SELECTOR = ".services-pin-target";
 /** Scroll libre après le pin avant que les rideaux ne commencent */
 const CURTAIN_START_BUFFER_VIEWPORTS = 1.25;
 /**
@@ -30,8 +32,20 @@ const PIN_DRIFT_VIEWPORTS = 0.4;
  * scroll, puis retombe à zéro. Doit rester ≤ CURTAIN_START_BUFFER_VIEWPORTS.
  */
 const PIN_DRIFT_SCROLL_VIEWPORTS = PIN_DRIFT_VIEWPORTS * 3;
+/**
+ * Freinage + snap Awards → Services :
+ * un scroll vers le bas amène la section Services entière (100dvh) en haut.
+ */
+const SERVICES_APPROACH_VIEWPORTS = 2.6;
+const SERVICES_APPROACH_SPEED_FAR = 0.22;
+const SERVICES_APPROACH_SPEED_NEAR = 0.07;
+const SERVICES_APPROACH_MAX_STEP = 6.5;
+const SERVICES_SNAP_TRIGGER = 0.78;
+const SERVICES_SNAP_DURATION = 1.2;
 
+const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
 const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
 type PinSnapshot = {
   startScroll: number;
@@ -50,6 +64,7 @@ const ProjectsAwardsTransition = () => {
   const rafRef = useRef<number | null>(null);
   const awardsScrollLatchedRef = useRef(false);
   const setTransitionReady = useSetTransitionReady();
+  const lenis = useLenis();
   const [progress, setProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [awardsFlowActive, setAwardsFlowActive] = useState(false);
@@ -58,6 +73,116 @@ const ProjectsAwardsTransition = () => {
   const appears = Array.from({ length: CURTAIN_COUNT }, (_, bottomIndex) =>
     getCurtainAppear(progress, bottomIndex),
   );
+
+  /* Ralentissement + snap plein écran vers Services */
+  useEffect(() => {
+    if (!lenis) return;
+
+    let softLanding = false;
+    let hasSnapped = false;
+
+    const getServicesEl = () =>
+      document.querySelector<HTMLElement>(SERVICES_TARGET_SELECTOR);
+
+    const getServicesTop = () =>
+      getServicesEl()?.getBoundingClientRect().top ?? Infinity;
+
+    const inSlowZone = () => {
+      const vh = window.innerHeight;
+      const zoneBottom =
+        zoneRef.current?.getBoundingClientRect().bottom ?? Infinity;
+      const servicesTop = getServicesTop();
+      const nearServices = servicesTop < vh * SERVICES_APPROACH_VIEWPORTS;
+      const leavingAwards =
+        zoneBottom < vh * 1.35 && zoneBottom > -vh * 0.15;
+      return nearServices || leavingAwards;
+    };
+
+    const snapToServices = () => {
+      const el = getServicesEl();
+      if (!el || softLanding) return;
+
+      softLanding = true;
+      hasSnapped = true;
+
+      lenis.scrollTo(el, {
+        offset: 0,
+        duration: SERVICES_SNAP_DURATION,
+        easing: easeOutExpo,
+        force: true,
+        onComplete: () => {
+          softLanding = false;
+        },
+      });
+    };
+
+    const onVirtualScroll = (data: { deltaY: number }) => {
+      if (data.deltaY <= 0) {
+        if (softLanding) {
+          softLanding = false;
+          lenis.scrollTo(lenis.scroll, { immediate: true, force: true });
+        }
+        return;
+      }
+
+      if (!inSlowZone()) return;
+
+      const vh = window.innerHeight;
+      const servicesTop = getServicesTop();
+
+      /* Un scroll bas suffit : on aligne toute la section Services */
+      if (
+        !hasSnapped &&
+        !softLanding &&
+        servicesTop < vh * SERVICES_SNAP_TRIGGER &&
+        servicesTop > 10
+      ) {
+        data.deltaY = 0;
+        snapToServices();
+        return;
+      }
+
+      const approachZone = vh * SERVICES_APPROACH_VIEWPORTS;
+      const t = clamp01(servicesTop / Math.max(approachZone, 1));
+      const speed =
+        SERVICES_APPROACH_SPEED_NEAR +
+        (SERVICES_APPROACH_SPEED_FAR - SERVICES_APPROACH_SPEED_NEAR) * t;
+
+      data.deltaY = Math.min(data.deltaY * speed, SERVICES_APPROACH_MAX_STEP);
+    };
+
+    const onScroll = () => {
+      const vh = window.innerHeight;
+      const servicesTop = getServicesTop();
+
+      if (servicesTop > vh * 1.15) {
+        hasSnapped = false;
+      }
+
+      if (lenis.velocity < -0.05) {
+        softLanding = false;
+        return;
+      }
+
+      if (
+        !hasSnapped &&
+        !softLanding &&
+        lenis.velocity > 0.08 &&
+        servicesTop < vh * SERVICES_SNAP_TRIGGER &&
+        servicesTop > 10
+      ) {
+        snapToServices();
+      }
+    };
+
+    lenis.on("virtual-scroll", onVirtualScroll);
+    lenis.on("scroll", onScroll);
+
+    return () => {
+      lenis.off("virtual-scroll", onVirtualScroll);
+      lenis.off("scroll", onScroll);
+    };
+  }, [lenis]);
 
   useEffect(() => {
     const zone = zoneRef.current;

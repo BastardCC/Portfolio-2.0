@@ -39,7 +39,9 @@ const getTextTarget = (progress: number) => {
 };
 
 const Services = () => {
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(
+    SERVICES[0]?.id ?? null,
+  );
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const scrollProgressRef = useRef(0);
@@ -51,7 +53,7 @@ const Services = () => {
   const textCurrentRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const visualEmitRef = useRef(0);
-  const hasAutoOpenedRef = useRef(false);
+  const hasAutoOpenedRef = useRef(true);
 
   const [lineProgress, setLineProgress] = useState<number[]>(() =>
     Array.from({ length: LINE_COUNT }, () => 0),

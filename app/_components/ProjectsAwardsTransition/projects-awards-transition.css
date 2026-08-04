@@ -19,7 +19,7 @@
       var(--awards-enter-ratio)
   );
   /* Laisse Awards + rideaux quitter le viewport avant Services */
-  --awards-exit-hold: 100dvh;
+  --awards-exit-hold: 130dvh;
 
   position: relative;
   z-index: 25;
