@@ -30,11 +30,8 @@ const PIN_DRIFT_VIEWPORTS = 0.4;
  * scroll, puis retombe à zéro. Doit rester ≤ CURTAIN_START_BUFFER_VIEWPORTS.
  */
 const PIN_DRIFT_SCROLL_VIEWPORTS = PIN_DRIFT_VIEWPORTS * 3;
-/** Sous ce progress, Awards se détache (après la sortie animée) */
-const AWARDS_EXIT_PROGRESS = 0.14;
 
 const easeOutCubic = (value: number) => 1 - (1 - value) ** 3;
-const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
 type PinSnapshot = {
   startScroll: number;
@@ -47,15 +44,16 @@ type PinSnapshot = {
 
 const ProjectsAwardsTransition = () => {
   const zoneRef = useRef<HTMLDivElement>(null);
+  const awardsPanelRef = useRef<HTMLDivElement>(null);
   const pinSnapshotRef = useRef<PinSnapshot | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const awardsLatchedRef = useRef(false);
+  const awardsScrollLatchedRef = useRef(false);
   const setTransitionReady = useSetTransitionReady();
   const [progress, setProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
-  const [awardsEngaged, setAwardsEngaged] = useState(false);
-  const [awardsExiting, setAwardsExiting] = useState(false);
+  const [awardsFlowActive, setAwardsFlowActive] = useState(false);
+  const [awardsScrollActive, setAwardsScrollActive] = useState(false);
 
   const appears = Array.from({ length: CURTAIN_COUNT }, (_, bottomIndex) =>
     getCurtainAppear(progress, bottomIndex),
@@ -79,10 +77,10 @@ const ProjectsAwardsTransition = () => {
 
     const releasePin = (pinTarget: HTMLElement | null) => {
       pinSnapshotRef.current = null;
-      awardsLatchedRef.current = false;
+      awardsScrollLatchedRef.current = false;
       setIsActive(false);
-      setAwardsEngaged(false);
-      setAwardsExiting(false);
+      setAwardsFlowActive(false);
+      setAwardsScrollActive(false);
 
       if (spacerRef.current) {
         spacerRef.current.remove();
@@ -156,6 +154,8 @@ const ProjectsAwardsTransition = () => {
         const ready = rect.bottom > 0 && rect.top < viewportHeight;
         setProgress(0);
         setTransitionReady(ready);
+        setAwardsFlowActive(ready);
+        setAwardsScrollActive(ready);
         return;
       }
 
@@ -221,32 +221,26 @@ const ProjectsAwardsTransition = () => {
         pinTarget.style.visibility = "";
       }
 
-      /* Hystérésis : Awards reste accroché au scroll-up pour jouer la sortie */
-      if (ready) {
-        awardsLatchedRef.current = true;
-      } else if (curtainProgress < AWARDS_EXIT_PROGRESS) {
-        awardsLatchedRef.current = false;
+      /*
+        Awards monte dans le flux (sticky) pendant les rideaux.
+        Les anims de contenu démarrent une fois le panel collé en haut,
+        pour que la montée reste un vrai scroll et non un fade.
+      */
+      const panelTop =
+        awardsPanelRef.current?.getBoundingClientRect().top ?? Infinity;
+      const awardsRising = panelTop < viewportHeight;
+      const awardsStuck = panelTop <= 12;
+
+      if (awardsStuck) {
+        awardsScrollLatchedRef.current = true;
+      } else if (panelTop > viewportHeight * 0.92) {
+        awardsScrollLatchedRef.current = false;
       }
 
-      const awardsActive = awardsLatchedRef.current;
-      const exiting = awardsActive && !ready;
-      const awardsFade = awardsActive
-        ? exiting
-          ? clamp01(
-              (curtainProgress - AWARDS_EXIT_PROGRESS) /
-                Math.max(0.22, 0.0001),
-            )
-          : 1
-        : 0;
-
-      setAwardsEngaged(awardsActive);
-      setAwardsExiting(exiting);
-      if (zone) {
-        zone.style.setProperty("--awards-flow-opacity", String(awardsFade));
-      }
-
+      setAwardsFlowActive(awardsRising || awardsScrollLatchedRef.current);
+      setAwardsScrollActive(awardsScrollLatchedRef.current);
       setProgress(curtainProgress);
-      setTransitionReady(ready);
+      setTransitionReady(ready || awardsScrollLatchedRef.current);
     };
 
     const scheduleUpdate = () => {
@@ -292,21 +286,22 @@ const ProjectsAwardsTransition = () => {
       <div
         className={[
           "transition-awards-flow",
-          awardsEngaged ? "transition-awards-flow--visible" : "",
-          awardsExiting ? "transition-awards-flow--exiting" : "",
+          awardsFlowActive ? "transition-awards-flow--active" : "",
         ]
           .filter(Boolean)
           .join(" ")}
       >
-        <section className="awards awards--on-curtains text-white">
-          <AwardsScroll
-            awards={AWARDS}
-            description={AWARDS_DESCRIPTION}
-            onCurtains
-            scrollActive={awardsEngaged}
-            exiting={awardsExiting}
-          />
-        </section>
+        <div ref={awardsPanelRef} className="transition-awards-panel">
+          <section className="awards awards--on-curtains text-white">
+            <AwardsScroll
+              awards={AWARDS}
+              description={AWARDS_DESCRIPTION}
+              onCurtains
+              scrollActive={awardsScrollActive}
+            />
+          </section>
+        </div>
+        <div className="transition-awards-runway" aria-hidden />
       </div>
     </div>
   );

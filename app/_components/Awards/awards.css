@@ -14,13 +14,15 @@
 
 .awards--on-curtains {
   background: transparent;
+  color: var(--background);
 }
 
 .awards__scroll-zone--on-curtains {
   position: relative;
   z-index: 1;
-  /* La hauteur est pilotée par .transition-awards-flow (remplit la zone) */
+  /* Le runway de scroll est fourni par .transition-awards-runway */
   height: 100%;
+  min-height: 100dvh;
 }
 
 .awards__scroll-zone--on-curtains .awards__sticky {
@@ -29,7 +31,8 @@
 }
 
 .awards__scroll-zone--on-curtains .awards__content-shade {
-  background: rgb(0 0 0 / 0.42);
+  /* Léger — la surface est déjà --awards-surface */
+  background: rgb(0 0 0 / 0.18);
 }
 
 .awards__content-shade--scroll-driven {
@@ -138,14 +141,6 @@
 
 .awards__intro--visible {
   opacity: 1;
-}
-
-.awards__scroll-zone--exiting .awards__intro {
-  transition-duration: 0.35s;
-}
-
-.awards__scroll-zone--exiting .awards-item__row {
-  transition-duration: 0.55s;
 }
 
 .awards__title {

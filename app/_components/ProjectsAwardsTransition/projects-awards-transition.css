@@ -6,14 +6,27 @@
   --curtain-scroll: calc(380dvh + var(--projects-curtain-buffer));
   --transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --curtain-seam: 2px;
+  /* Surface unique rideaux + Awards (évite l’écart dû au shade) */
+  --awards-surface: #0a0909;
   --awards-runway: calc(
     var(--award-count, 4) * 70dvh + 75dvh
   );
+  /* Awards monte depuis le bas vers ~50 % de la course des rideaux */
+  --awards-enter-ratio: 0.5;
+  --awards-start: calc(
+    var(--projects-curtain-buffer) +
+      (var(--curtain-scroll) - var(--projects-curtain-buffer)) *
+      var(--awards-enter-ratio)
+  );
+  /* Laisse Awards + rideaux quitter le viewport avant Services */
+  --awards-exit-hold: 100dvh;
 
   position: relative;
   z-index: 25;
   margin-top: calc(-1 * var(--transition-overlap));
-  height: calc(var(--curtain-scroll) + var(--awards-runway));
+  height: calc(
+    var(--awards-start) + var(--awards-runway) + var(--awards-exit-hold)
+  );
   background: transparent;
   pointer-events: none;
 }
@@ -26,6 +39,8 @@
   isolation: isolate;
   pointer-events: none;
   opacity: 0;
+  /* Transparent : sinon le fond masque l’arrivée des lames */
+  background: transparent;
   transition: opacity 0.55s var(--transition-ease);
 }
 
@@ -54,7 +69,7 @@
   width: 100%;
   top: calc(var(--curtain-seam) * -0.5);
   height: calc(100% + var(--curtain-seam));
-  background: var(--foreground);
+  background: var(--awards-surface);
   backface-visibility: hidden;
   will-change: transform;
   transition: transform 1s var(--transition-ease);
@@ -68,31 +83,38 @@
   position: relative;
   z-index: 2;
   margin-top: -100dvh;
-  height: 100%;
+  padding-top: var(--awards-start);
+  padding-bottom: var(--awards-exit-hold);
+  height: calc(100% + 100dvh);
   pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.7s var(--transition-ease),
-    visibility 0s linear 0.7s;
 }
 
-.transition-awards-flow--visible {
+.transition-awards-flow--active {
   pointer-events: auto;
-  opacity: var(--awards-flow-opacity, 1);
-  visibility: visible;
-  transition:
-    opacity 0.55s var(--transition-ease),
-    visibility 0s linear 0s;
 }
 
-.transition-awards-flow--exiting {
+/* Sticky sans transform — même principe que Contact */
+.transition-awards-panel {
+  position: sticky;
+  top: 0;
+  min-height: 100dvh;
+  display: flex;
+  align-items: stretch;
+  background: var(--awards-surface);
+  color: var(--background);
+}
+
+.transition-awards-panel .awards {
+  width: 100%;
+  min-height: 100dvh;
+  background: transparent;
+}
+
+.transition-awards-runway {
+  width: 100%;
+  height: var(--awards-runway);
   pointer-events: none;
-}
-
-.transition-awards-flow .awards,
-.transition-awards-flow .awards__scroll-zone {
-  height: 100%;
+  background: var(--awards-surface);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -100,8 +122,7 @@
     display: none;
   }
 
-  .transition-sticky,
-  .transition-awards-flow {
+  .transition-sticky {
     transition: none;
   }
 }
