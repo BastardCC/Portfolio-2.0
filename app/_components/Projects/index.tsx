@@ -2,7 +2,7 @@ import RevealText from "../RevealText";
 import { ProjectsAwardsTransition } from "../ProjectsAwardsTransition";
 import ProjectsGrid from "./ProjectsGrid";
 import ProjectsListAlt from "./ProjectsListAlt";
-import { PROJECTS, PROJECTS_DESCRIPTION } from "./projects-data";
+import { PROJECTS, PROJECTS_ALT, PROJECTS_DESCRIPTION } from "./projects-data";
 import "./projects.css";
 
 const Projects = () => {
@@ -21,7 +21,7 @@ const Projects = () => {
         </div>
 
         <ProjectsGrid projects={PROJECTS} />
-        <ProjectsListAlt projects={PROJECTS} />
+        <ProjectsListAlt projects={PROJECTS_ALT} />
 
         {/* Déclenche le freinage + soft-snap tout près de la fin */}
         <div className="projects__soft-end-mark" aria-hidden />
