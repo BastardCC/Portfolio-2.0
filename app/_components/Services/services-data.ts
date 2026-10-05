@@ -59,6 +59,10 @@ export const SERVICES: ServiceCategory[] = [
         items: ["n8n", "Webhooks"],
       },
       {
+        title: "AI & Workflow",
+        items: ["Cursor", "Claude"],
+      },
+      {
         title: "Tests & Quality",
         items: ["Vitest", "Jest", "ESLint"],
       },
