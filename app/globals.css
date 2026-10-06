@@ -11,10 +11,15 @@
   --font-sans: var(--font-spline-sans);
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-spline-sans);
+  overflow-x: clip;
 }
 
 @layer components {
