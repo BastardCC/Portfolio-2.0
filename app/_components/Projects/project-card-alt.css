@@ -136,13 +136,13 @@
 }
 
 .project-card-alt__image {
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.8s var(--project-card-alt-ease);
 }
 
 .project-card-alt--hovered .project-card-alt__image,
 .project-card-alt:focus-visible .project-card-alt__image {
-  transform: scale(1.08);
+  transform: scale(1.5);
 }
 
 .project-card-alt__body {

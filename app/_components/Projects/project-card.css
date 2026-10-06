@@ -11,7 +11,7 @@
   --project-card-curtain-duration: 0.4s;
   --project-card-curtain-color: #798e7b;
   --project-card-cursor-size: 6rem;
-  --project-card-ease: cubic-bezier(.22,.97,.1,.81);
+  --project-card-ease: cubic-bezier(0.22, 0.97, 0.1, 0.81);
   --cursor-x: 0px;
   --cursor-y: 0px;
 
@@ -110,9 +110,10 @@
 }
 
 .project-card__image {
-  object-fit: cover;
+  object-fit: contain;
   transform: scale(1);
-  transition: transform var(--project-card-zoom-duration) var(--project-card-ease);
+  transition: transform var(--project-card-zoom-duration)
+    var(--project-card-ease);
 }
 
 .project-card:hover .project-card__image,
@@ -176,14 +177,14 @@
 
 /* Titre / description du header : sortie vers le haut au hover */
 .project-card:hover .project-card__header .project-card__text-reveal > *,
-.project-card:focus-within .project-card__header .project-card__text-reveal > * {
+.project-card:focus-within
+  .project-card__header
+  .project-card__text-reveal
+  > * {
   transform: translateY(-140%);
 }
 
-.project-card:hover
-  .project-card__header
-  .project-card__text-reveal--delay
-  > *,
+.project-card:hover .project-card__header .project-card__text-reveal--delay > *,
 .project-card:focus-within
   .project-card__header
   .project-card__text-reveal--delay
@@ -220,7 +221,8 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  transition: color var(--project-card-curtain-duration) var(--project-card-ease);
+  transition: color var(--project-card-curtain-duration)
+    var(--project-card-ease);
 }
 
 .project-card:hover .project-card__footer,
