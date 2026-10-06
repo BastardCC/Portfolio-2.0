@@ -137,7 +137,6 @@
 
 .project-card-alt__image {
   object-fit: cover;
-  transform: scale(1);
   transition: transform 0.8s var(--project-card-alt-ease);
 }
 
