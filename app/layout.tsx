@@ -12,6 +12,11 @@ const splineSans = Spline_Sans({
 export const metadata: Metadata = {
   title: "Aina Nirina",
   description: "Portfolio of Aina Nirina",
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

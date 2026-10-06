@@ -9,8 +9,12 @@ const Header = () => {
   return (
     <header className="container relative z-10 py-2">
       <nav className="flex items-center justify-between py-4">
-        <Link href="/" className="text-2xl font-bold">
-          Logo
+        <Link href="/" className="inline-flex items-center" aria-label="Aina Nirina">
+          <img
+            src="/logo.svg"
+            alt=""
+            className="h-8 w-auto md:h-10"
+          />
         </Link>
         <PillButton href={CV_PATH} download>
           Download CV
