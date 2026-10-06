@@ -64,6 +64,40 @@
   width: 100%;
 }
 
+@media (width < 48rem) {
+  .services-contact-transition-zone.transition-zone {
+    margin-top: 0;
+    height: auto;
+    pointer-events: auto;
+  }
+
+  .services-contact-transition-zone .transition-sticky {
+    display: none;
+  }
+
+  .transition-contact-flow {
+    margin-top: 0;
+    padding-top: 0;
+    height: auto;
+    pointer-events: auto;
+  }
+
+  .transition-contact-panel {
+    position: relative;
+    min-height: auto;
+  }
+
+  .transition-contact-panel__reveal {
+    opacity: 1;
+    transform: none;
+    min-height: auto;
+  }
+
+  .transition-contact-panel .contact {
+    min-height: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .services-contact-transition-zone {
     display: none;

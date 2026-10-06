@@ -116,6 +116,28 @@
   transition: color var(--project-card-curtain-duration) ease;
 }
 
+.project-card-alt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  height: 1px;
+  background: var(--foreground);
+  transform: scaleX(0);
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.projects-list-alt--visible .project-card-alt::after {
+  animation: projects-line-expand-x var(--projects-list-alt-line-duration)
+    var(--projects-list-alt-line-ease) forwards;
+  animation-delay: calc(
+    var(--alt-line-index, 0) * var(--projects-list-alt-line-stagger)
+  );
+}
+
 .project-card-alt .project-card__curtain {
   z-index: 0;
 }
@@ -153,7 +175,7 @@
   justify-content: space-between;
   gap: 0.85rem;
   min-width: 0;
-  height: var(--project-card-alt-media);
+  height: auto;
   padding-block: 0.15rem;
   padding-inline: 0.35rem 0.5rem;
   transition: color var(--project-card-curtain-duration) ease;
@@ -172,20 +194,19 @@
 
 .project-card-alt__meta {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
 }
 
 .project-card-alt__meta .project-card__tags {
   justify-content: flex-start;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  flex: none;
 }
 
 .project-card-alt__category {
   margin: 0;
-  flex-shrink: 0;
   line-height: 1.2;
 }
 
@@ -226,12 +247,43 @@
     padding: 1.75rem 1.5rem;
     min-height: calc(var(--project-card-alt-media) + 3.5rem);
   }
+
+  .project-card-alt::after {
+    content: none;
+    animation: none;
+  }
+
+  .project-card-alt__body {
+    height: var(--project-card-alt-media);
+  }
+
+  .project-card-alt__meta {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .project-card-alt__meta .project-card__tags {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  .project-card-alt__category {
+    flex-shrink: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .projects-list-alt__line {
+  .projects-list-alt__line,
+  .project-card-alt::after {
     transform: none;
     animation: none;
+  }
+
+  .projects-list-alt--visible .project-card-alt::after {
+    transform: scaleX(1);
   }
 
   .projects-list-alt--visible .projects-list-alt__line--middle,

@@ -55,8 +55,12 @@ const ProjectsListAlt = ({ projects }: ProjectsListAltProps) => {
           <span className="projects-list-alt__line projects-list-alt__line--vertical projects-list-alt__line--vertical-bottom" />
         </div>
 
-        {projects.map((project) => (
-          <ProjectCardAlt key={`alt-${project.title}`} {...project} />
+        {projects.map((project, index) => (
+          <ProjectCardAlt
+            key={`alt-${project.title}`}
+            {...project}
+            index={index}
+          />
         ))}
       </div>
     </div>

@@ -52,12 +52,15 @@
 
 .awards__scroll-zone {
   --award-count: 4;
+  position: relative;
+  overflow: visible;
+}
+
+.awards__scroll-zone:not(.awards__scroll-zone--on-curtains) {
   height: calc(
     100vh + var(--award-count) * var(--awards-scroll-step) +
       var(--awards-scroll-tail)
   );
-  position: relative;
-  overflow: visible;
 }
 
 .awards__sticky {
@@ -238,6 +241,23 @@
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+@media (width < 48rem) {
+  .awards__trophy-bg {
+    padding-right: 0;
+  }
+
+  .awards__trophy--decorative {
+    --awards-trophy-shift-x: -0.5rem;
+    width: min(68vw, 18.5rem);
+    height: min(46vh, 18.5rem);
+  }
+
+  .awards__content-shade,
+  .awards__scroll-zone--on-curtains .awards__content-shade {
+    background: rgb(0 0 0 / 0.62);
+  }
 }
 
 .awards-list {

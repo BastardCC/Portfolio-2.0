@@ -26,6 +26,14 @@
   will-change: opacity, transform;
 }
 
+@media (width < 48rem) {
+  .services-pin-target {
+    align-items: flex-start;
+    min-height: auto;
+    overflow: visible;
+  }
+}
+
 .services-pin-spacer {
   width: 100%;
   pointer-events: none;

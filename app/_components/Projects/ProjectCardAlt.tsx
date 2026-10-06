@@ -17,7 +17,9 @@ import "./project-card-alt.css";
 
 type CurtainState = "above" | "covering" | "below";
 
-type ProjectCardAltProps = ProjectItem;
+type ProjectCardAltProps = ProjectItem & {
+  index?: number;
+};
 
 const CURSOR_LERP = 0.12;
 
@@ -49,6 +51,7 @@ const ProjectCardAlt = ({
   image,
   bgColor,
   href,
+  index = 0,
 }: ProjectCardAltProps) => {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const cursorRef = useRef<HTMLSpanElement>(null);
@@ -187,6 +190,7 @@ const ProjectCardAlt = ({
 
   const cardStyle = {
     "--project-card-curtain-color": bgColor,
+    "--alt-line-index": index,
   } as CSSProperties;
 
   const cardProps = {

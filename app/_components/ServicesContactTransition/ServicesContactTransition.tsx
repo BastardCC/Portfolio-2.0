@@ -44,6 +44,9 @@ const CONTACT_END_MAX_STEP = 1.15;
 const CONTACT_MAX_VELOCITY = 0.2;
 const CONTACT_SOFT_LANDING_DURATION = 3.15;
 const CONTACT_SNAP_TRIGGER = 0.55;
+const COMPACT_VIEWPORT = "(width < 48rem)";
+
+const isCompactViewport = () => window.matchMedia(COMPACT_VIEWPORT).matches;
 
 const easeOutExpo = (time: number) => Math.min(1, 1.001 - 2 ** (-10 * time));
 
@@ -133,6 +136,8 @@ const ServicesContactTransition = () => {
     };
 
     const onVirtualScroll = (data: { deltaY: number }) => {
+      if (isCompactViewport()) return;
+
       if (data.deltaY <= 0) {
         if (softLanding) {
           softLanding = false;
@@ -187,6 +192,8 @@ const ServicesContactTransition = () => {
     };
 
     const onScroll = () => {
+      if (isCompactViewport()) return;
+
       const vh = window.innerHeight;
       const panelTop = getPanelTop();
       const velocity = lenis.velocity;
@@ -372,8 +379,11 @@ const ServicesContactTransition = () => {
         "(prefers-reduced-motion: reduce)",
       ).matches;
 
-      if (reducedMotion) {
-        releasePin(pinTarget);
+      if (reducedMotion || isCompactViewport()) {
+        if (pinSnapshotRef.current) {
+          releasePin(pinTarget);
+        }
+
         setProgress(0);
         revealTargetRef.current = 1;
         revealCurrentRef.current = 1;

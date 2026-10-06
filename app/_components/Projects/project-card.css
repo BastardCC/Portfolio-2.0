@@ -272,11 +272,11 @@
     gap: 0.5rem;
     margin-bottom: 1.25rem;
     padding-top: 0.75rem;
+    overflow: hidden;
   }
 
   .project-card__header .project-card__text-reveal {
     margin-top: 0;
-    overflow: visible;
   }
 
   .project-card__title {
