@@ -22,7 +22,7 @@ import {
   type Object3D,
 } from "three";
 
-const TROPHY_URL = "/models/trophy/scene.gltf";
+const TROPHY_URL = "/models/trophy/trophy.glb";
 const TROPHY_ROTATION_TURNS = 0.6;
 const DRAG_ROTATION_SENSITIVITY = 0.005;
 const MAX_PITCH_ROTATION = Math.PI / 2.5;
@@ -197,6 +197,7 @@ const AwardTrophy = ({
   const lastPointerYRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const [observedAppear, setObservedAppear] = useState(false);
   const hasAppeared = appearProgressRef
     ? (appearProgressRef.current ?? 0) > 0.01
@@ -224,6 +225,36 @@ const AwardTrophy = ({
 
     return () => cancelAnimationFrame(rafId);
   }, [appearProgressRef]);
+
+  useEffect(() => {
+    const startLoading = () => {
+      useGLTF.preload(TROPHY_URL);
+      setShouldLoad(true);
+    };
+
+    const trigger =
+      document.querySelector(".projects-pin-target") ??
+      document.querySelector(".projects-grid") ??
+      containerRef.current;
+
+    if (!trigger) {
+      startLoading();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        startLoading();
+        observer.disconnect();
+      },
+      { rootMargin: "0px", threshold: 0.08 },
+    );
+
+    observer.observe(trigger);
+
+    return () => observer.disconnect();
+  }, []);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -334,7 +365,7 @@ const AwardTrophy = ({
           : "Trophée 3D — faire glisser pour le faire tourner dans toutes les directions"
       }
     >
-      {isReady ? (
+      {isReady && shouldLoad ? (
         <Canvas
           shadows={false}
           camera={{
@@ -394,7 +425,5 @@ const AwardTrophy = ({
     </div>
   );
 };
-
-useGLTF.preload(TROPHY_URL);
 
 export default AwardTrophy;
