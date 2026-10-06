@@ -60,7 +60,7 @@ export const SERVICES: ServiceCategory[] = [
       },
       {
         title: "AI & Workflow",
-        items: ["Cursor", "Claude"],
+        items: ["Cursor", "Claude", "OpenRouter"],
       },
       {
         title: "Tests & Quality",
